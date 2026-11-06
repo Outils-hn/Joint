@@ -1,0 +1,101 @@
+// Check-up automatique de Joint dans un vrai navigateur (donnees du navigateur vierges).
+// Resultat : checkup.txt (OK / ECHEC) + captures d'ecran.
+import { chromium } from "playwright";
+import { mkdirSync, writeFileSync } from "node:fs";
+
+const BASE = process.env.APP_URL ?? "http://127.0.0.1:8090/";
+const OUT = process.argv[2] ?? "captures";
+mkdirSync(OUT, { recursive: true });
+const lignes = [];
+const verif = (nom, ok, detail = "") => lignes.push(`${ok ? "OK    " : "ECHEC "} ${nom}${detail ? ` (${detail})` : ""}`);
+const step = async (nom, fn) => { try { await fn(); } catch (e) { verif(nom, false, e.message.split("\n")[0].slice(0, 180)); } };
+const browser = await chromium.launch();
+
+async function ouvrir({ largeur = 1440, hauteur = 900, sombre = false } = {}) {
+  const c = await browser.newContext({ viewport: { width: largeur, height: hauteur } });
+  await c.addInitScript((d) => { if (d) localStorage.setItem("outils-theme", "dark"); }, sombre);
+  const page = await c.newPage();
+  page.on("pageerror", (e) => verif("Aucune erreur JavaScript", false, e.message.slice(0, 150)));
+  await page.goto(BASE, { waitUntil: "load" });
+  await page.waitForTimeout(300);
+  return { c, page };
+}
+const big = (page) => page.locator("#rBig").innerText().then((t) => t.replace(/\s+/g, " ").trim());
+const pasDebordement = (page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
+
+await step("Exemple de depart : 2 tubes alu de 4 m = 13,0 mm", async () => {
+  const { c, page } = await ouvrir();
+  verif("Resultat de depart 13,0 mm", (await big(page)) === "13,0 mm", await big(page));
+  verif("Le schema montre 3 etats", (await page.locator(".etat").count()) === 3);
+  await page.screenshot({ path: `${OUT}/01-depart.png`, fullPage: true });
+
+  // Point fixe au centre des deux elements -> 7,5 mm
+  await page.locator('[data-chips="g-pt"] [data-k="centre"]').click();
+  await page.locator('[data-chips="d-pt"] [data-k="centre"]').click();
+  verif("Points fixes au centre : 7,5 mm", (await big(page)) === "7,5 mm", await big(page));
+
+  // Paroi fixe a droite : un seul element bouge
+  await page.locator('[data-chips="d-mat"] [data-k="paroi"]').click();
+  verif("Paroi fixe : 2,8 + 2 = 4,8 mm", (await big(page)) === "4,8 mm", await big(page));
+  verif("Champs de l'element de droite masques", !(await page.locator("#dLong").isVisible()));
+  await page.screenshot({ path: `${OUT}/02-paroi.png`, fullPage: true });
+  await c.close();
+});
+
+await step("Verification de l'espace prevu", async () => {
+  const { c, page } = await ouvrir();
+  await page.fill("#prevu", "10");
+  const v = page.locator("#verdict");
+  verif("10 mm avec points a l'autre bout : trop serre", (await v.getAttribute("class")).includes("touche") && /Trop serré/.test(await v.innerText()));
+  await page.screenshot({ path: `${OUT}/03-verdict.png`, fullPage: true });
+  await page.locator('[data-chips="g-pt"] [data-k="centre"]').click();
+  await page.locator('[data-chips="d-pt"] [data-k="centre"]').click();
+  verif("10 mm avec points au centre : c'est bon", (await v.getAttribute("class")).includes("ok") && /C'est bon/.test(await v.innerText()));
+  await c.close();
+});
+
+await step("Situation, materiaux, coefficient libre et memoire des reglages", async () => {
+  const { c, page } = await ouvrir();
+  await page.locator('[data-chips="amb"] [data-k="int"]').click();
+  verif("Interieur : mini 0, maxi 40", (await page.inputValue("#tMin")) === "0" && (await page.inputValue("#tMax")) === "40");
+  verif("Interieur : 20 K x 23 x 4 x 2 + 2 = 5,7 mm", (await big(page)) === "5,7 mm", await big(page));
+  await page.fill("#tMax", "80");
+  verif("Mini 0 / maxi 80 : situation personnalisee", (await page.locator('[data-chips="amb"] [data-k="perso"]').getAttribute("aria-pressed")) === "true");
+  await page.locator('[data-chips="g-mat"] [data-k="autre"]').click();
+  verif("Coefficient libre visible", await page.locator("#gCoef").isVisible());
+  await page.fill("#gCoef", "10"); await page.fill("#gLong", "3000");
+  await page.waitForTimeout(100);
+  await page.reload(); await page.waitForTimeout(300);
+  verif("Les reglages sont retrouves apres rechargement", (await page.inputValue("#gLong")) === "3000" && (await page.inputValue("#gCoef")) === "10");
+  await c.close();
+});
+
+await step("Donnees manquantes", async () => {
+  const { c, page } = await ouvrir();
+  await page.fill("#gLong", "");
+  verif("Longueur vide : pas de resultat", (await big(page)) === "—");
+  verif("Copie desactivee", await page.locator("#copyBtn").isDisabled());
+  await c.close();
+});
+
+await step("Telephone et theme sombre", async () => {
+  const { c, page } = await ouvrir({ largeur: 390, hauteur: 844 });
+  verif("Telephone : pas de defilement lateral", await pasDebordement(page));
+  await page.screenshot({ path: `${OUT}/04-telephone.png`, fullPage: true });
+  await c.close();
+  const sombre = await ouvrir({ sombre: true });
+  await sombre.page.screenshot({ path: `${OUT}/05-sombre.png`, fullPage: true });
+  verif("Theme sombre applique", (await sombre.page.evaluate(() => document.documentElement.dataset.theme)) === "dark");
+  await sombre.c.close();
+});
+
+await step("Menu des applis", async () => {
+  const { c, page } = await ouvrir();
+  await page.locator("#appsMenu summary").click();
+  verif("Le menu liste les applis dont Joint", (await page.locator("#appsList a").count()) === 10);
+  await c.close();
+});
+
+await browser.close();
+writeFileSync(`${OUT}/checkup.txt`, lignes.join("\n") + "\n");
+console.log(lignes.join("\n"));

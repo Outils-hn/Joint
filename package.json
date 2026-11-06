@@ -1,0 +1,10 @@
+{
+  "name": "joint",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Espace a laisser entre deux elements (dilatation thermique)",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}
