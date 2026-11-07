@@ -46,6 +46,9 @@ await step("Calculs : longueur, materiau, situation, reglage de pose", async () 
   await page.click("#sAmb [data-k='ombre']");
   verif("Hypothese a l'ombre : jusqu'a 40 °C", /jusqu.à 40 °C/.test(await txt(page, "#sHyp")), await txt(page, "#sHyp"));
   verif("A l'ombre (40 °C) : +2,8 mm, joint 6 mm", (await txt(page, "#sDil")) === "+2,8 mm" && (await txt(page, "#sJoint")) === "6 mm", `${await txt(page, "#sDil")} / ${await txt(page, "#sJoint")}`);
+  await page.click("#sAmb [data-k='int']");
+  verif("Interieur (10 a 30 °C), 6 m d'alu : +1,4 mm, joint 3 mm", /jusqu.à 30 °C/.test(await txt(page, "#sHyp")) && (await txt(page, "#sDil")) === "+1,4 mm" && (await txt(page, "#sJoint")) === "3 mm", `${await txt(page, "#sHyp")} / ${await txt(page, "#sDil")} / ${await txt(page, "#sJoint")}`);
+  await page.click("#sAmb [data-k='ombre']");
   await page.click("#sMat .sel-btn");
   verif("Menu matiere : 4 choix", (await page.locator("#sMat .sel-pop button").count()) === 4);
   await page.screenshot({ path: `${OUT}/02-menu.png` });
@@ -91,7 +94,7 @@ await step("Copie du resume, pied de page, menu des applis", async () => {
   verif("Message « Résumé copié »", /copi/i.test(await txt(page, "#toast")), await txt(page, "#toast"));
   const pied = await page.locator("footer").evaluate((el) => { const r = el.getBoundingClientRect(); return { centre: r.left + r.width / 2, page: document.documentElement.clientWidth / 2, align: getComputedStyle(el).textAlign }; });
   verif("Pied de page centre", pied.align === "center" && Math.abs(pied.centre - pied.page) < 2, JSON.stringify(pied));
-  verif("Pied de page : version 2.2", /Joint v2\.2/.test(await txt(page, "footer")), await txt(page, "footer"));
+  verif("Pied de page : version 2.3", /Joint v2\.3/.test(await txt(page, "footer")), await txt(page, "footer"));
   await page.locator("#appsMenu summary").click();
   verif("Le menu liste les applis dont Joint", (await page.locator("#appsList a").count()) === 10);
   verif("Joint s'appelle « Dilatation et joints »", /Dilatation et joints/.test(await txt(page, "#appsList")), await txt(page, "#appsList"));

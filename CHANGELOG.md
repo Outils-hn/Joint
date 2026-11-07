@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.3 — 7 novembre 2026
+
+- Nouveauté : en intérieur, Joint suppose maintenant 10 à 30 °C (au lieu de 0 à 40 °C), plus proche d'un local chauffé : la dilatation est plus faible.
+
 ## 2.2 — 7 novembre 2026
 
 - Nouveauté : Joint affiche l'hypothèse de température sous le choix de l'endroit (par exemple « jusqu'à 80 °C, pose à 20 °C ») pour comprendre d'où vient la dilatation.
