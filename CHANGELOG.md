@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 1.3 — 7 novembre 2026
+
+- Nouveauté : le schéma du trou oblong est enfin lisible : les textes ne se superposent plus, même pour de petites pièces, et ils sont plus grands, y compris sur téléphone.
+
 ## 1.2 — 7 novembre 2026
 
 - Nouveauté : Joint affiche le coefficient de dilatation en « × 10⁻⁶ K⁻¹ », propose de beaux menus pour le matériau et la situation, et dessine le trou oblong à prévoir avec sa vis (place côté chaud, place côté froid) pour une pièce seule. Les ronds des points fixes ne sont plus cachés par la hachure et le pied de page est centré.
