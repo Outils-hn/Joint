@@ -33,17 +33,19 @@ export const variation = (coef, longueurMm, ecart) => coef * 1e-6 * longueurMm *
 
 /**
  * Une piece : de combien elle dilate, quel joint entre deux pieces identiques, quel trou oblong si elle est vissee.
- * Cas le plus defavorable : chaque piece avance vers le joint de toute sa dilatation (point fixe a l'autre bout).
- * Trou oblong : vis au milieu, meme place de chaque cote = la plus grande des deux courses (chaud / froid) + le reglage de pose voulu de chaque cote.
+ * Fixation : « milieu » (cas courant : chaque bout n'avance que de la moitie de la dilatation) ou « bout » (cas le plus defavorable : un bout avance de toute la dilatation).
+ * Trou oblong : vis au milieu du trou, meme place de chaque cote = la plus grande des deux courses (chaud / froid) du bout + le reglage de pose voulu de chaque cote.
  * Joint et trou sont arrondis au mm superieur.
  */
-export function jointSimple({ coef, longueur, tpose = 20, tmin, tmax, reglage = 0 }) {
+export function jointSimple({ coef, longueur, tpose = 20, tmin, tmax, reglage = 0, fixe = "milieu" }) {
   if (![coef, longueur, tpose, tmin, tmax].every(Number.isFinite) || longueur <= 0) return null;
   const reg = Number.isFinite(reglage) && reglage > 0 ? reglage : 0;
-  const dilatation = variation(coef, longueur, Math.max(0, tmax - tpose));
+  const part = fixe === "bout" ? 1 : 0.5;
+  const dilatation = variation(coef, longueur, Math.max(0, tmax - tpose)); // dilatation de toute la piece
   const raccourcissement = variation(coef, longueur, Math.max(0, tpose - tmin));
-  const brut = 2 * dilatation;
-  const demi = Math.max(dilatation, raccourcissement);
+  const avance = part * dilatation; // ce dont un bout avance vers le joint
+  const brut = 2 * avance;
+  const demi = part * Math.max(dilatation, raccourcissement);
   const arrondi = (x) => Math.max(0, Math.ceil(x - 1e-9));
-  return { dilatation, raccourcissement, brut, joint: arrondi(brut), demi, reglage: reg, cote: demi + reg, trouBrut: 2 * (demi + reg), trou: arrondi(2 * (demi + reg)) };
+  return { dilatation, raccourcissement, part, avance, brut, joint: arrondi(brut), demi, reglage: reg, cote: demi + reg, trouBrut: 2 * (demi + reg), trou: arrondi(2 * (demi + reg)) };
 }

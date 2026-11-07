@@ -119,6 +119,7 @@ footer a, footer button { color: inherit; background: none; border: 0; padding: 
 .srow { display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px; }
 .slbl { display: block; margin: 14px 0 6px; }
 .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.seg.deux { grid-template-columns: repeat(2, 1fr); }
 .seg button { min-height: 52px; padding: 4px 6px; border: 1.5px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); font: 500 14px/1.2 var(--sans); cursor: pointer; }
 .seg button.on { background: var(--joint-ink); border-color: var(--joint-ink); color: var(--surface); }
 .sjoint { border-top: 1px solid var(--joint-line); margin-top: 14px; padding-top: 12px; }

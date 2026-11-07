@@ -27,12 +27,16 @@ const txt = (page, id) => page.locator(id).innerText().then((t) => t.replace(/\s
 await step("Ecran de depart : 3 m d'alu au soleil", async () => {
   const { c, page } = await ouvrir();
   verif("Dilatation +4,1 mm", (await txt(page, "#sDil")) === "+4,1 mm", await txt(page, "#sDil"));
-  verif("Joint entre deux pieces : 9 mm (8,28 arrondi)", (await txt(page, "#sJoint")) === "9 mm", await txt(page, "#sJoint"));
-  verif("Calcul exact affiche (8,3 mm)", /Calcul exact : 8,3 mm/.test(await txt(page, "#sWhy")), await txt(page, "#sWhy"));
+  verif("Joint entre deux pieces : 5 mm (4,14 arrondi), piece fixee au milieu", (await txt(page, "#sJoint")) === "5 mm", await txt(page, "#sJoint"));
+  verif("Calcul exact affiche (4,1 mm)", /Calcul exact : 4,1 mm.*2,1 mm chacune.*au milieu/.test(await txt(page, "#sWhy")), await txt(page, "#sWhy"));
   verif("Hypothese affichee : jusqu'a 80 °C, pose a 20 °C", /jusqu.à 80 °C.*-20 °C.*20 °C/.test(await txt(page, "#sHyp")), await txt(page, "#sHyp"));
-  verif("Trou oblong : 9 mm + Ø de la vis", (await txt(page, "#sTrou")) === "9 mm + Ø de la vis", await txt(page, "#sTrou"));
-  verif("Phrase du trou : course par cote, total, arrondi", /De chaque côté de la vis : 4,1 mm de course\. Trou total : 8,3 mm, arrondi à 9 mm/.test(await txt(page, "#sTrouWhy")), await txt(page, "#sTrouWhy"));
-  verif("Trou oblong : 4,1 mm de chaque cote de la vis", (await txt(page, "#sSlot")) === "4,1 mm 4,1 mm", await txt(page, "#sSlot"));
+  verif("Trou oblong : 5 mm + Ø de la vis", (await txt(page, "#sTrou")) === "5 mm + Ø de la vis", await txt(page, "#sTrou"));
+  verif("Phrase du trou : course par cote, total, arrondi", /De chaque côté de la vis : 2,1 mm de course\. Trou total : 4,1 mm, arrondi à 5 mm/.test(await txt(page, "#sTrouWhy")), await txt(page, "#sTrouWhy"));
+  verif("Trou oblong : 2,1 mm de chaque cote de la vis", (await txt(page, "#sSlot")) === "2,1 mm 2,1 mm", await txt(page, "#sSlot"));
+  await page.click("#sFix [data-k='bout']");
+  verif("Fixee a un bout : joint 9 mm, trou 9 mm", (await txt(page, "#sJoint")) === "9 mm" && /^9 mm/.test(await txt(page, "#sTrou")) && /tout l.allongement/.test(await txt(page, "#sWhy")), `${await txt(page, "#sJoint")} / ${await txt(page, "#sTrou")}`);
+  await page.click("#sFix [data-k='milieu']");
+  verif("Retour a « au milieu » : joint 5 mm", (await txt(page, "#sJoint")) === "5 mm");
   verif("Le joint est visible sans defiler (ordinateur)", await page.locator("#sJoint").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
   verif("Le champ affiche « 3000 mm »", (await page.locator("#sLong").evaluate((el) => el.value)) === "3000" && (await page.locator("#sLong + .u").evaluate((el) => el.textContent.replace(/\s+/g, " ").trim())) === "3000 mm");
   verif("Aucun reglage detaille : un seul champ de longueur", (await page.locator("input").count()) === 2);
@@ -42,6 +46,7 @@ await step("Ecran de depart : 3 m d'alu au soleil", async () => {
 
 await step("Calculs : longueur, materiau, situation, reglage de pose", async () => {
   const { c, page } = await ouvrir();
+  await page.click("#sFix [data-k='bout']");
   await page.fill("#sLong", "6000");
   verif("6 m d'alu : +8,3 mm, joint 17 mm, trou 17 mm", (await txt(page, "#sDil")) === "+8,3 mm" && (await txt(page, "#sJoint")) === "17 mm" && /^17 mm/.test(await txt(page, "#sTrou")), `${await txt(page, "#sDil")} / ${await txt(page, "#sJoint")} / ${await txt(page, "#sTrou")}`);
   await page.click("#sAmb [data-k='ombre']");
@@ -96,7 +101,7 @@ await step("Copie du resume, pied de page, menu des applis", async () => {
   verif("Message « Résumé copié »", /copi/i.test(await txt(page, "#toast")), await txt(page, "#toast"));
   const pied = await page.locator("footer").evaluate((el) => { const r = el.getBoundingClientRect(); return { centre: r.left + r.width / 2, page: document.documentElement.clientWidth / 2, align: getComputedStyle(el).textAlign }; });
   verif("Pied de page centre", pied.align === "center" && Math.abs(pied.centre - pied.page) < 2, JSON.stringify(pied));
-  verif("Pied de page : version 2.5", /Joint v2\.5/.test(await txt(page, "footer")), await txt(page, "footer"));
+  verif("Pied de page : version 2.6", /Joint v2\.6/.test(await txt(page, "footer")), await txt(page, "footer"));
   await page.locator("#appsMenu summary").click();
   verif("Le menu liste les applis dont Joint", (await page.locator("#appsList a").count()) === 10);
   verif("Joint s'appelle « Dilatation et joints »", /Dilatation et joints/.test(await txt(page, "#appsList")), await txt(page, "#appsList"));

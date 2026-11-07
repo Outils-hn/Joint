@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.6 — 7 novembre 2026
+
+- Nouveauté : Joint demande comment la pièce est fixée : « au milieu » (par défaut, chaque bout n'avance que de la moitié) ou « à un bout ». Le joint et le trou oblong sont donc deux fois plus petits dans le cas courant.
+
 ## 2.5 — 7 novembre 2026
 
 - Nouveauté : la phrase sous le trou oblong est réécrite pour être claire : « De chaque côté de la vis : 4,1 mm de course + 20 mm de réglage = 24,1 mm. Trou total : 48,3 mm, arrondi à 49 mm ».
