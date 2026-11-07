@@ -11,156 +11,69 @@ const verif = (nom, ok, detail = "") => lignes.push(`${ok ? "OK    " : "ECHEC "}
 const step = async (nom, fn) => { try { await fn(); } catch (e) { verif(nom, false, e.message.split("\n")[0].slice(0, 180)); } };
 const browser = await chromium.launch();
 
-async function ouvrir({ largeur = 1440, hauteur = 900, sombre = false, avance = true } = {}) {
+async function ouvrir({ largeur = 1440, hauteur = 900, sombre = false } = {}) {
   const c = await browser.newContext({ viewport: { width: largeur, height: hauteur } });
   await c.addInitScript((d) => { if (d) localStorage.setItem("outils-theme", "dark"); }, sombre);
   const page = await c.newPage();
   page.on("pageerror", (e) => verif("Aucune erreur JavaScript", false, e.message.slice(0, 150)));
   await page.goto(BASE, { waitUntil: "load" });
-  if (avance) await page.evaluate(() => { document.getElementById("avance").open = true; }); // les reglages detailles sont replies par defaut
   await page.waitForTimeout(300);
   return { c, page };
 }
-const big = (page) => page.locator("#rBig").innerText().then((t) => t.replace(/\s+/g, " ").trim());
 const pasDebordement = (page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
 
-const choisir = async (page, id, k) => { await page.click(`#${id} .sel-btn`); await page.click(`#${id} .sel-pop [data-k="${k}"]`); };
-const dot = (page, cote, k) => page.locator(`#draw .barwrap.${cote} .dot[aria-label$="${k}"]`).click();
+const txt = (page, id) => page.locator(id).innerText().then((t) => t.replace(/\s+/g, " ").trim());
 
-await step("Ecran simple : une piece, sa dilatation, le joint entre deux pieces", async () => {
-  const { c, page } = await ouvrir({ avance: false });
-  const txt = (id) => page.locator(id).innerText().then((t) => t.replace(/\s+/g, " ").trim());
-  verif("Depart : 3 m d'alu au soleil dilate de +4,1 mm", (await txt("#sDil")) === "+4,1 mm", await txt("#sDil"));
-  verif("Joint entre deux pieces : 9 mm (8,28 arrondi)", (await txt("#sJoint")) === "9 mm", await txt("#sJoint"));
-  verif("Calcul exact affiche (8,3 mm)", /Calcul exact : 8,3 mm/.test(await txt("#sWhy")), await txt("#sWhy"));
-  verif("Le resultat est visible sans defiler (ordinateur)", await page.locator("#sJoint").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
-  verif("Reglages detailles replies", !(await page.locator("#modeDeux").isVisible()));
-  verif("Le champ affiche « 3000 mm »", (await page.locator("#sLong").evaluate((el) => el.value)) === "3000");
-  await page.screenshot({ path: `${OUT}/00-simple.png`, fullPage: true });
-  await page.fill("#sLong", "6000");
-  verif("6 m d'alu : +8,3 mm, joint 17 mm", (await txt("#sDil")) === "+8,3 mm" && (await txt("#sJoint")) === "17 mm", `${await txt("#sDil")} / ${await txt("#sJoint")}`);
-  await page.click("#sAmb [data-k='ombre']");
-  verif("A l'ombre (40 °C) : +2,8 mm, joint 6 mm", (await txt("#sDil")) === "+2,8 mm" && (await txt("#sJoint")) === "6 mm", `${await txt("#sDil")} / ${await txt("#sJoint")}`);
-  await page.click("#sMat .sel-btn"); await page.click("#sMat .sel-pop [data-k='verre']");
-  verif("Verre 6 m a l'ombre : +1,1 mm, joint 3 mm", (await txt("#sDil")) === "+1,1 mm" && (await txt("#sJoint")) === "3 mm", `${await txt("#sDil")} / ${await txt("#sJoint")}`);
-  await page.fill("#sLong", "");
-  verif("Champ vide : pas de resultat", (await txt("#sJoint")) === "—" && (await page.locator("#sCopy").isDisabled()));
-  await page.fill("#sLong", "3000");
-  await page.click("#avance summary");
-  verif("Plus d'options : l'ancien calcul est toujours la", await page.locator("#modeDeux").isVisible() && (await big(page)) === "13,0 mm", await big(page));
-  await c.close();
-  const t = await ouvrir({ largeur: 390, hauteur: 844, avance: false });
-  verif("Telephone : pas de debordement", await pasDebordement(t.page));
-  verif("Telephone : le joint est visible sans defiler", await t.page.locator("#sJoint").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
-  await t.page.screenshot({ path: `${OUT}/00-simple-tel.png`, fullPage: true });
-  await t.c.close();
-});
-
-await step("Exemple de depart : 2 tubes alu de 4 m = 13,0 mm", async () => {
+await step("Ecran de depart : 3 m d'alu au soleil", async () => {
   const { c, page } = await ouvrir();
-  verif("Resultat de depart 13,0 mm", (await big(page)) === "13,0 mm", await big(page));
-  verif("Trois etats affiches", (await page.locator("#etats .etat").count()) === 3);
-  verif("Coefficient affiche en petit", /23 × 10⁻⁶ K⁻¹/.test(await page.locator("#gCoefTxt").innerText()));
+  verif("Dilatation +4,1 mm", (await txt(page, "#sDil")) === "+4,1 mm", await txt(page, "#sDil"));
+  verif("Joint entre deux pieces : 9 mm (8,28 arrondi)", (await txt(page, "#sJoint")) === "9 mm", await txt(page, "#sJoint"));
+  verif("Calcul exact affiche (8,3 mm)", /Calcul exact : 8,3 mm/.test(await txt(page, "#sWhy")), await txt(page, "#sWhy"));
+  verif("Trou oblong : 9 mm + Ø de la vis", (await txt(page, "#sTrou")) === "9 mm + Ø de la vis", await txt(page, "#sTrou"));
+  verif("Trou oblong : 4,1 mm de chaque cote de la vis", (await txt(page, "#sSlot")) === "4,1 mm 4,1 mm", await txt(page, "#sSlot"));
+  verif("Le joint est visible sans defiler (ordinateur)", await page.locator("#sJoint").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
+  verif("Le champ affiche « 3000 mm »", (await page.locator("#sLong").evaluate((el) => el.value)) === "3000" && (await page.locator("#sLong + .u").evaluate((el) => el.textContent.replace(/\s+/g, " ").trim())) === "3000 mm");
+  verif("Aucun reglage detaille : un seul champ de longueur", (await page.locator("input").count()) === 2);
   await page.screenshot({ path: `${OUT}/01-depart.png`, fullPage: true });
-
-  // Point fixe au centre des deux elements (on touche le rond du dessin) -> 7,5 mm
-  await dot(page, "g", "au centre"); await dot(page, "d", "au centre");
-  verif("Points fixes au centre : 7,5 mm", (await big(page)) === "7,5 mm", await big(page));
-
-  // Paroi fixe a droite : un seul element bouge
-  await choisir(page, "dMat", "paroi");
-  verif("Paroi fixe : 2,8 + 2 = 4,8 mm", (await big(page)) === "4,8 mm", await big(page));
-  verif("Longueur de l'element de droite masquee", !(await page.locator("#dLong").isVisible()));
-  await page.screenshot({ path: `${OUT}/02-paroi.png`, fullPage: true });
   await c.close();
 });
 
-await step("Unite juste apres la valeur saisie", async () => {
+await step("Calculs : longueur, materiau, situation, reglage de pose", async () => {
   const { c, page } = await ouvrir();
-  const u = page.locator("#gLong").locator("xpath=../span[@class='u']");
-  const [boite, champ] = await Promise.all([u.locator("i").boundingBox(), page.locator("#gLong").boundingBox()]);
-  const apres = await u.evaluate((el) => el.textContent);
-  verif("Le champ affiche « 4000 mm »", apres.replace(/\s+/g, " ").trim() === "4000 mm", apres);
-  await page.fill("#gLong", "65000");
-  const l2 = await u.locator("i").boundingBox();
-  verif("L'unite suit la valeur (plus longue = plus a droite)", l2.width > boite.width && l2.x === boite.x);
-  await page.fill("#gLong", "");
-  verif("Champ vide : pas d'unite", (await u.evaluate((el) => el.textContent)) === "");
-  await c.close();
-});
-
-await step("Verification de l'espace prevu", async () => {
-  const { c, page } = await ouvrir();
-  await page.fill("#prevu", "10");
-  const v = page.locator("#verdict");
-  verif("10 mm avec points a l'autre bout : trop serre", (await v.getAttribute("class")).includes("touche") && /Trop serré/.test(await v.innerText()));
-  await page.screenshot({ path: `${OUT}/03-verdict.png`, fullPage: true });
-  await dot(page, "g", "au centre"); await dot(page, "d", "au centre");
-  verif("10 mm avec points au centre : c'est bon", (await v.getAttribute("class")).includes("ok") && /C'est bon/.test(await v.innerText()));
-  await c.close();
-});
-
-await step("Une seule piece", async () => {
-  const { c, page } = await ouvrir();
-  await page.click("#modeUne");
-  await page.fill("#gLong", "6000");
-  verif("Piece de 6 m en alu : +8,3 mm", (await big(page)) === "+8,3 mm", await big(page));
-  verif("Trou oblong : 16,6 mm, vis au milieu", /16,6 mm \+ diamètre de la vis, vis au milieu \(8,3 mm de chaque côté\)/.test(await page.locator("#rWhy").innerText()), await page.locator("#rWhy").innerText());
-  verif("Le deuxieme element disparait", !(await page.locator("#colD").isVisible()));
-  verif("Champ « J'avais prevu » masque", !(await page.locator("#prevu").isVisible()));
-  verif("Schema du trou oblong affiche", await page.locator("#oblong svg").isVisible());
-  const obl = (await page.locator("#oblong").innerText()).replace(/\s+/g, " ");
-  verif("Schema : 8,3 mm de place de chaque cote, trou de 16,6 mm", (obl.match(/8,3 mm/g) ?? []).length >= 2 && /trou : 16,6 mm/.test(obl), obl);
-  const visX = () => page.locator("#vis circle").evaluate((el) => el.getBoundingClientRect().x);
-  const x0 = await visX();
-  await page.click("#oblBtns [data-k='chaud']"); await page.waitForTimeout(450);
-  const xc = await visX();
-  verif("Curseur : en chaud la vis glisse de 8,3 mm, marge 0", xc !== x0 && /glisse de 8,3 mm/.test(await page.locator("#oblEtat").innerText()) && /0,0 mm de marge/.test(await page.locator("#oblEtat").innerText()), await page.locator("#oblEtat").innerText());
-  await page.screenshot({ path: `${OUT}/06b-oblong-chaud.png`, fullPage: true });
-  await page.click("#oblBtns [data-k='froid']"); await page.waitForTimeout(450);
-  const xf = await visX();
-  verif("Curseur : en froid la vis part de l'autre cote (5,5 mm)", (xf - x0) * (xc - x0) < 0 && /glisse de 5,5 mm/.test(await page.locator("#oblEtat").innerText()) && /2,8 mm de marge/.test(await page.locator("#oblEtat").innerText()), `${x0} ${xc} ${xf}`);
-  await page.click("#oblBtns [data-k='pose']"); await page.waitForTimeout(450);
-  verif("Curseur : a la pose la vis revient", Math.abs((await visX()) - x0) < 1);
-  await page.screenshot({ path: `${OUT}/06-piece.png`, fullPage: true });
-  await page.locator("#draw .dot[aria-label$='au centre']").click();
-  verif("Point fixe au centre : 4,1 mm de chaque cote", /4,1 mm de chaque côté/.test(await page.locator("#rWhy").innerText()), await page.locator("#rWhy").innerText());
-  await page.reload(); await page.waitForTimeout(300);
-  verif("Le mode est retrouve apres rechargement", (await page.locator("#modeUne").getAttribute("aria-selected")) === "true");
-  await c.close();
-});
-
-await step("Situation, materiaux, coefficient libre et memoire des reglages", async () => {
-  const { c, page } = await ouvrir();
-  await choisir(page, "amb", "int");
-  verif("Interieur : mini 0, maxi 40", (await page.inputValue("#tMin")) === "0" && (await page.inputValue("#tMax")) === "40");
-  verif("Interieur : 5,7 mm", (await big(page)) === "5,7 mm", await big(page));
-  await page.fill("#tMax", "80");
-  verif("Mini 0 / maxi 80 : situation personnalisee", /Personnalisé/.test(await page.locator("#amb .sel-t").innerText()));
-  await choisir(page, "gMat", "autre");
-  verif("Coefficient libre visible", await page.locator("#gCoef").isVisible());
-  await page.fill("#gCoef", "10"); await page.fill("#gLong", "3000");
-  await page.waitForTimeout(100);
-  await page.reload(); await page.waitForTimeout(300);
-  verif("Les reglages sont retrouves apres rechargement", (await page.inputValue("#gLong")) === "3000" && (await page.inputValue("#gCoef")) === "10");
-  await c.close();
-});
-
-await step("Donnees manquantes", async () => {
-  const { c, page } = await ouvrir();
-  await page.fill("#gLong", "");
-  verif("Longueur vide : pas de resultat", (await big(page)) === "—");
-  verif("Copie desactivee", await page.locator("#copyBtn").isDisabled());
+  await page.fill("#sLong", "6000");
+  verif("6 m d'alu : +8,3 mm, joint 17 mm, trou 17 mm", (await txt(page, "#sDil")) === "+8,3 mm" && (await txt(page, "#sJoint")) === "17 mm" && /^17 mm/.test(await txt(page, "#sTrou")), `${await txt(page, "#sDil")} / ${await txt(page, "#sJoint")} / ${await txt(page, "#sTrou")}`);
+  await page.click("#sAmb [data-k='ombre']");
+  verif("A l'ombre (40 °C) : +2,8 mm, joint 6 mm", (await txt(page, "#sDil")) === "+2,8 mm" && (await txt(page, "#sJoint")) === "6 mm", `${await txt(page, "#sDil")} / ${await txt(page, "#sJoint")}`);
+  await page.click("#sMat .sel-btn");
+  verif("Menu matiere : 4 choix", (await page.locator("#sMat .sel-pop button").count()) === 4);
+  await page.screenshot({ path: `${OUT}/02-menu.png` });
+  await page.keyboard.press("Escape");
+  verif("Echap ferme le menu", await page.locator("#sMat .sel-pop").evaluate((el) => el.classList.contains("hidden")));
+  await page.click("#sMat .sel-btn"); await page.click("#sMat .sel-pop [data-k='verre']");
+  verif("Verre 6 m a l'ombre : +1,1 mm, joint 3 mm", (await txt(page, "#sDil")) === "+1,1 mm" && (await txt(page, "#sJoint")) === "3 mm", `${await txt(page, "#sDil")} / ${await txt(page, "#sJoint")}`);
+  await page.click("#sAmb [data-k='soleil']"); await page.click("#sMat .sel-btn"); await page.click("#sMat .sel-pop [data-k='alu']"); await page.fill("#sLong", "3000");
+  await page.fill("#sReg", "20");
+  verif("Reglage de pose ± 20 mm : trou de 49 mm + Ø de la vis", (await txt(page, "#sTrou")) === "49 mm + Ø de la vis", await txt(page, "#sTrou"));
+  verif("Reglage : 24,1 mm de chaque cote", (await txt(page, "#sSlot")) === "24,1 mm 24,1 mm", await txt(page, "#sSlot"));
+  verif("Le joint ne change pas avec le reglage", (await txt(page, "#sJoint")) === "9 mm");
+  await page.screenshot({ path: `${OUT}/03-reglage.png`, fullPage: true });
+  await page.fill("#sLong", "");
+  verif("Champ vide : pas de resultat, copie desactivee", (await txt(page, "#sJoint")) === "—" && (await txt(page, "#sTrou")) === "—" && (await page.locator("#sCopy").isDisabled()));
+  await page.fill("#sLong", "1 500,5");
+  verif("Virgule et espace acceptes (1 500,5 mm d'alu)", (await txt(page, "#sDil")) === "+2,1 mm", await txt(page, "#sDil"));
+  await page.fill("#sLong", "4000");
+  await page.reload({ waitUntil: "load" });
+  verif("Les reglages sont retrouves apres rechargement", (await page.locator("#sLong").evaluate((el) => el.value)) === "4000" && (await page.locator("#sReg").evaluate((el) => el.value)) === "20");
   await c.close();
 });
 
 await step("Telephone et theme sombre", async () => {
   const { c, page } = await ouvrir({ largeur: 390, hauteur: 844 });
   verif("Telephone : pas de defilement lateral", await pasDebordement(page));
+  verif("Telephone : le joint est visible sans defiler", await page.locator("#sJoint").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
+  await page.fill("#sReg", "20");
+  verif("Telephone avec reglage : pas de defilement lateral", await pasDebordement(page));
   await page.screenshot({ path: `${OUT}/04-telephone.png`, fullPage: true });
-  await page.click("#modeUne");
-  verif("Telephone, une piece : pas de defilement lateral", await pasDebordement(page));
-  await page.screenshot({ path: `${OUT}/07-telephone-piece.png`, fullPage: true });
   await c.close();
   const sombre = await ouvrir({ sombre: true });
   await sombre.page.screenshot({ path: `${OUT}/05-sombre.png`, fullPage: true });
@@ -168,26 +81,18 @@ await step("Telephone et theme sombre", async () => {
   await sombre.c.close();
 });
 
-await step("Menus de choix et pied de page", async () => {
+await step("Copie du resume, pied de page, menu des applis", async () => {
   const { c, page } = await ouvrir();
-  await page.click("#gMat .sel-btn");
-  verif("Menu matiere : 5 choix a gauche", (await page.locator("#gMat .sel-pop button").count()) === 5);
-  verif("Menu matiere : 6 choix a droite (avec paroi fixe)", (await page.locator("#dMat .sel-pop button").count()) === 6);
-  await page.screenshot({ path: `${OUT}/08-menu.png` });
-  await page.keyboard.press("Escape");
-  verif("Echap ferme le menu", await page.locator("#gMat .sel-pop").evaluate((el) => el.classList.contains("hidden")));
-  // Les ronds des points fixes ne sont pas caches par la hachure : on clique vraiment dessus
-  await page.locator("#draw .barwrap.g .dot[aria-label$='côté joint']").click({ timeout: 3000 });
-  verif("Le rond cote joint est cliquable (pas recouvert)", (await page.locator("#draw .barwrap.g .dot[aria-label$='côté joint']").getAttribute("aria-pressed")) === "true");
+  await c.grantPermissions(["clipboard-read", "clipboard-write"]).catch(() => {});
+  await page.click("#sCopy");
+  await page.waitForFunction(() => /copi/i.test(document.getElementById("toast").textContent), null, { timeout: 3000 }).catch(() => {});
+  verif("Message « Résumé copié »", /copi/i.test(await txt(page, "#toast")), await txt(page, "#toast"));
   const pied = await page.locator("footer").evaluate((el) => { const r = el.getBoundingClientRect(); return { centre: r.left + r.width / 2, page: document.documentElement.clientWidth / 2, align: getComputedStyle(el).textAlign }; });
   verif("Pied de page centre", pied.align === "center" && Math.abs(pied.centre - pied.page) < 2, JSON.stringify(pied));
-  await c.close();
-});
-
-await step("Menu des applis", async () => {
-  const { c, page } = await ouvrir();
+  verif("Pied de page : version 2.1", /Joint v2\.1/.test(await txt(page, "footer")), await txt(page, "footer"));
   await page.locator("#appsMenu summary").click();
   verif("Le menu liste les applis dont Joint", (await page.locator("#appsList a").count()) === 10);
+  verif("Joint s'appelle « Dilatation et joints »", /Dilatation et joints/.test(await txt(page, "#appsList")), await txt(page, "#appsList"));
   await c.close();
 });
 
