@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.5 — 7 novembre 2026
+
+- Nouveauté : la phrase sous le trou oblong est réécrite pour être claire : « De chaque côté de la vis : 4,1 mm de course + 20 mm de réglage = 24,1 mm. Trou total : 48,3 mm, arrondi à 49 mm ».
+
 ## 2.4 — 7 novembre 2026
 
 - Nouveauté : en intérieur, Joint suppose maintenant 10 à 25 °C (bâtiments performants thermiquement) : la dilatation est plus faible.
