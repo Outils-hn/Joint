@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="styles.css?v=1.5">
+<link rel="stylesheet" href="styles.css?v=2.0">
 </head>
 <body>
 <header class="topbar">
@@ -38,6 +38,34 @@
 </header>
 
 <main>
+  <section class="card" aria-labelledby="hPiece">
+    <h2 id="hPiece">Ma pièce</h2>
+    <div class="srow">
+      <div class="sel" id="sMat"><button type="button" class="sel-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Matériau de la pièce"><span class="sw"></span><span class="sel-t"></span><svg class="chev" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="sel-pop hidden" role="listbox" aria-label="Matériau de la pièce"></div></div>
+      <div class="unit" data-u="mm"><input id="sLong" inputmode="decimal" autocomplete="off" aria-label="Longueur de la pièce"><span class="u" aria-hidden="true"></span></div>
+    </div>
+    <span class="lbl slbl" id="sAmbLbl">Où est-elle posée ?</span>
+    <div class="seg" id="sAmb" role="radiogroup" aria-labelledby="sAmbLbl"></div>
+  </section>
+
+  <section class="card result sresult" aria-live="polite">
+    <div class="result-top">
+      <span class="kicker">Elle dilate de</span>
+      <div class="big" id="sDil">—</div>
+      <div class="sdraw" id="sDraw" aria-hidden="true"></div>
+      <div class="sjoint">
+        <span class="kicker">Joint à prévoir entre deux pièces</span>
+        <div class="big" id="sJoint">—</div>
+        <p class="why" id="sWhy"></p>
+      </div>
+    </div>
+  </section>
+  <div class="actions"><button type="button" class="btn" id="sCopy">Copier le résumé</button></div>
+
+  <details class="card avance" id="avance">
+    <summary>Plus d'options</summary>
+    <p class="hint">Deux pièces de longueurs différentes, pièce fixée au centre, températures au choix, trous oblongs pour les fixations.</p>
+    <div class="avance-body">
   <div class="modes" role="tablist" aria-label="Que veux-tu calculer ?">
     <button type="button" role="tab" id="modeDeux" data-mode="deux">Espace entre deux éléments</button>
     <button type="button" role="tab" id="modeUne" data-mode="une">Dilatation d'une pièce</button>
@@ -124,10 +152,12 @@
       <p class="hint">Valeurs courantes, indicatives. Les températures « au soleil » supposent un élément sombre exposé ; à confirmer avec les règles du bureau et la fiche du fabricant.</p>
     </div>
   </details>
+    </div>
+  </details>
 </main>
 
-<footer>Joint v1.5 · <button type="button" id="aboutBtn">Conçu par Hugo N.</button> · 2026 · <a href="https://outils-hn.github.io/?app=Joint&amp;v=1.5&amp;page=%2FJoint%2F" target="_blank" rel="noopener noreferrer">Suggestion / bug</a></footer>
+<footer>Joint v2.0 · <button type="button" id="aboutBtn">Conçu par Hugo N.</button> · 2026 · <a href="https://outils-hn.github.io/?app=Joint&amp;v=2.0&amp;page=%2FJoint%2F" target="_blank" rel="noopener noreferrer">Suggestion / bug</a></footer>
 <div class="toast" id="toast" role="status"></div>
-<script type="module" src="js/app.js?v=1.5"></script>
+<script type="module" src="js/app.js?v=2.0"></script>
 </body>
 </html>

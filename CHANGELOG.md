@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.0 — 7 novembre 2026
+
+- Nouveauté : Joint devient très simple : tu indiques la pièce (matériau, longueur, intérieur ou extérieur) et l'appli donne de combien elle dilate et le joint à prévoir entre deux pièces, arrondi au millimètre. Tout le reste (deux pièces différentes, points fixes, trous oblongs) est dans « Plus d'options ».
+
 ## 1.5 — 7 novembre 2026
 
 - Nouveauté : le trou oblong est maintenant donné pour une vis posée au milieu, avec la même place de chaque côté : une seule cote à dessiner, aucune consigne compliquée pour les monteurs. Le curseur de température montre la marge qui reste.

@@ -1,5 +1,5 @@
 // Joint : affichage et saisie. Les calculs sont dans core.js.
-import { MATERIAUX, POINTS_FIXES, POINTS_PIECE, AMBIANCES, calculer, piece, nombre, fmt, resume, resumePiece } from "./core.js";
+import { MATERIAUX, POINTS_FIXES, POINTS_PIECE, AMBIANCES, calculer, piece, jointSimple, nombre, fmt, resume, resumePiece } from "./core.js";
 
 const $ = (id) => document.getElementById(id);
 const CLE = "joint.reglages";
@@ -11,6 +11,7 @@ const APPLIS = [
 
 // Cas de depart : l'exemple de tous les jours, 2 tubes alu de 4 m en plein soleil
 const DEFAUT = {
+  sMat: "alu", sLong: "3000", sAmb: "soleil",
   mode: "deux", uPt: "gauche",
   gMat: "alu", gCoef: "", gLong: "4000", gPt: "loin",
   dMat: "alu", dCoef: "", dLong: "4000", dPt: "loin",
@@ -20,6 +21,8 @@ let s = { ...DEFAUT };
 try {
   const lu = JSON.parse(localStorage.getItem(CLE) ?? "null");
   if (lu && typeof lu === "object") for (const k of Object.keys(DEFAUT)) if (typeof lu[k] === "string") s[k] = lu[k];
+  if (!MATERIAUX[s.sMat] || !MATERIAUX[s.sMat].coef) s.sMat = DEFAUT.sMat;
+  if (!AMBIANCES[s.sAmb]) s.sAmb = DEFAUT.sAmb;
   if (!MATERIAUX[s.gMat]) s.gMat = DEFAUT.gMat;
   if (!(MATERIAUX[s.dMat] || s.dMat === "paroi")) s.dMat = DEFAUT.dMat;
   if (s.mode !== "deux" && s.mode !== "une") s.mode = "deux";
@@ -66,6 +69,7 @@ const AMB_NOMS = { soleil: "Extérieur au soleil", ombre: "Extérieur à l'ombre
 // Menus de choix maison (plus jolis que les menus du navigateur) : bouton + liste de choix avec une pastille de couleur
 const MAT_META = (k) => (MATERIAUX[k]?.coef != null ? `${MATERIAUX[k].coef} × 10⁻⁶` : "");
 const SELECTS = {
+  sMat: { get: () => s.sMat, set: (k) => { s.sMat = k; }, opts: () => Object.keys(MATERIAUX).filter((k) => MATERIAUX[k].coef).map((k) => ({ k, nom: MATERIAUX[k].nom, meta: MAT_META(k), sw: `sw-${k}` })) },
   gMat: { get: () => s.gMat, set: (k) => { s.gMat = k; }, opts: () => Object.keys(MATERIAUX).map((k) => ({ k, nom: k === "autre" ? "Autre…" : MATERIAUX[k].nom, meta: MAT_META(k), sw: `sw-${k}` })) },
   dMat: { get: () => s.dMat, set: (k) => { s.dMat = k; }, opts: () => [...Object.keys(MATERIAUX).map((k) => ({ k, nom: k === "autre" ? "Autre…" : MATERIAUX[k].nom, meta: MAT_META(k), sw: `sw-${k}` })), { k: "paroi", nom: "Paroi fixe (mur)", meta: "ne bouge pas", sw: "sw-paroi", sep: true }] },
   amb: { get: () => (AMBIANCES[s.amb] ? s.amb : "perso"), set: (k) => { s.amb = k; if (AMBIANCES[k]) { s.tMin = String(AMBIANCES[k].tmin); s.tMax = String(AMBIANCES[k].tmax); } },
@@ -107,7 +111,7 @@ for (const id of Object.keys(SELECTS)) {
 document.addEventListener("click", (e) => { if (!e.target.closest(".sel")) fermerMenus(null); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") fermerMenus(null); });
 
-const CHAMPS = ["gCoef", "gLong", "dCoef", "dLong", "tMin", "tPose", "tMax", "jeu", "prevu"];
+const CHAMPS = ["sLong", "gCoef", "gLong", "dCoef", "dLong", "tMin", "tPose", "tMax", "jeu", "prevu"];
 for (const cle of CHAMPS) {
   $(cle).addEventListener("input", () => {
     s[cle] = $(cle).value;
@@ -266,6 +270,7 @@ function majCoef(cote) {
 }
 function maj() {
   sauver();
+  majSimple();
   const une = s.mode === "une";
   document.querySelectorAll(".modes button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.mode === s.mode)));
   for (const id of Object.keys(SELECTS)) majSelect(id);
@@ -334,21 +339,50 @@ function maj() {
   etatsDeux(e, r);
 }
 
+// ---------- Ecran simple : une piece, de combien elle dilate, quel joint entre deux pieces ----------
+const AMB_SIMPLE = ["soleil", "ombre", "int"];
+$("sAmb").innerHTML = AMB_SIMPLE.map((k) => `<button type="button" role="radio" data-k="${k}">${AMB_NOMS[k]}</button>`).join("");
+$("sAmb").addEventListener("click", (e) => { const b = e.target.closest("button[data-k]"); if (b) { s.sAmb = b.dataset.k; maj(); } });
+let dernierSimple = null;
+function majSimple() {
+  document.querySelectorAll("#sAmb button").forEach((b) => { const on = b.dataset.k === s.sAmb; b.setAttribute("aria-checked", String(on)); b.classList.toggle("on", on); });
+  const r = jointSimple({ coef: MATERIAUX[s.sMat].coef, longueur: nombre(s.sLong), tmax: AMBIANCES[s.sAmb].tmax });
+  dernierSimple = r;
+  $("sCopy").disabled = !r;
+  if (!r) { $("sDil").textContent = "—"; $("sJoint").textContent = "—"; $("sWhy").textContent = "Renseigne la longueur de la pièce (en mm)."; $("sDraw").innerHTML = ""; return; }
+  $("sDil").innerHTML = `+${fmt(r.dilatation)} <small>mm</small>`;
+  $("sJoint").innerHTML = `${fmt(r.joint, 0)} <small>mm</small>`;
+  $("sWhy").textContent = `Calcul exact : ${mm(r.brut)}. Les deux pièces avancent l'une vers l'autre de ${mm(r.dilatation)} chacune (cas le plus défavorable). Arrondi au mm supérieur.`;
+  $("sDraw").innerHTML = `<div class="b1"></div><div class="gj" style="width:${Math.max(16, Math.min(90, r.joint * 4))}px"></div><div class="b2"></div>`;
+}
+$("sCopy").addEventListener("click", async () => {
+  if (!dernierSimple) return;
+  const txt = [
+    `Joint entre deux pièces : ${NOM_MAT[s.sMat]} ${fmt(nombre(s.sLong), 0)} mm, ${AMB_NOMS[s.sAmb].toLowerCase()} (jusqu'à ${AMBIANCES[s.sAmb].tmax} °C, pose à 20 °C)`,
+    `Dilatation de chaque pièce : +${fmt(dernierSimple.dilatation)} mm`,
+    `Joint à prévoir : ${fmt(dernierSimple.joint, 0)} mm (calcul exact ${fmt(dernierSimple.brut)} mm, arrondi au mm supérieur)`,
+  ].join("\n");
+  copier(txt);
+});
+
 // ---------- Copie du resume ----------
 function toast(t) { const el = $("toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2200); }
-$("copyBtn").addEventListener("click", async () => {
-  if (!dernier) return;
-  const txt = dernier.une
-    ? resumePiece(dernier.e, dernier.r, NOM_MAT[s.gMat])
-    : resume(dernier.e, dernier.r, { g: NOM_MAT[s.gMat], d: NOM_MAT[s.dMat] ?? "" });
+async function copier(txt) {
   try { await navigator.clipboard.writeText(txt); toast("Résumé copié"); }
   catch (e) {
     const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select();
     try { document.execCommand("copy"); toast("Résumé copié"); } catch (e2) { toast("Copie impossible"); }
     ta.remove();
   }
+}
+$("copyBtn").addEventListener("click", () => {
+  if (!dernier) return;
+  const txt = dernier.une
+    ? resumePiece(dernier.e, dernier.r, NOM_MAT[s.gMat])
+    : resume(dernier.e, dernier.r, { g: NOM_MAT[s.gMat], d: NOM_MAT[s.dMat] ?? "" });
+  copier(txt);
 });
-$("aboutBtn").addEventListener("click", () => toast("Joint v1.5 · conçu et développé par Hugo N."));
+$("aboutBtn").addEventListener("click", () => toast("Joint v2.0 · conçu et développé par Hugo N."));
 $("coefsBody").innerHTML = Object.values(MATERIAUX).filter((m) => m.coef).map((m) => `<tr><td>${m.nom}</td><td>${m.coef}</td></tr>`).join("");
 
 maj();

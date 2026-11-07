@@ -81,3 +81,12 @@ test("piece seule : donnees manquantes ou incoherentes", () => {
   assert.equal(r.incoherent, true); proche(r.allongement, 0);
   assert.ok(POINTS_PIECE.droite);
 });
+
+test("joint simple : 3 m d'alu au soleil = +4,14 mm, joint de 8,28 arrondi a 9 mm", async () => {
+  const { jointSimple } = await import("../js/core.js");
+  const r = jointSimple({ coef: 23, longueur: 3000, tmax: 80 });
+  proche(r.dilatation, 4.14); proche(r.brut, 8.28); assert.equal(r.joint, 9);
+  assert.equal(jointSimple({ coef: 23, longueur: 3000, tmax: 20 }).joint, 0);
+  assert.equal(jointSimple({ coef: 23, longueur: NaN, tmax: 80 }), null);
+  assert.equal(jointSimple({ coef: 10, longueur: 1000, tmax: 70 }).joint, 1); // 2 x 0,5 = 1,0 exactement : pas d'arrondi vers 2
+});

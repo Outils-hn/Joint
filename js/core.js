@@ -124,3 +124,14 @@ export function resumePiece({ e, tmin, tpose, tmax }, r, nom) {
     `Trou oblong : ${fmt(2 * r.demiTrou)} mm + diamètre de la vis, vis au milieu (${fmt(r.demiTrou)} mm de chaque côté)`,
   ].join("\n");
 }
+
+/**
+ * Cas de tous les jours : une piece, de combien elle dilate, et quel joint entre deux pieces identiques.
+ * Cas le plus defavorable : chaque piece avance vers le joint de toute sa dilatation. Joint arrondi au mm superieur.
+ */
+export function jointSimple({ coef, longueur, tpose = 20, tmax }) {
+  if (![coef, longueur, tpose, tmax].every(Number.isFinite) || longueur <= 0) return null;
+  const dilatation = variation(coef, longueur, Math.max(0, tmax - tpose));
+  const brut = 2 * dilatation;
+  return { dilatation, brut, joint: Math.max(0, Math.ceil(brut - 1e-9)) };
+}
