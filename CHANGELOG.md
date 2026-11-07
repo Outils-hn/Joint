@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.10 — 7 novembre 2026
+
+- Correction : la phrase d'accroche du bandeau est retirée.
+
 ## 2.9 — 7 novembre 2026
 
 - Nouveauté : le menu des applis propose maintenant Membrane (étanchéité).
