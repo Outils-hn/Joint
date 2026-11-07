@@ -202,46 +202,43 @@ function dessinerOblong(r, t) {
     return `<path d="M${a} ${y}H${b}M${a} ${y}l${7 * sg} -4.5M${a} ${y}l${7 * sg} 4.5M${b} ${y}l${-7 * sg} -4.5M${b} ${y}l${-7 * sg} 4.5" fill="none" class="${couleur}" stroke="currentColor" stroke-width="1.8"/>`
       + `<path d="M${a} ${y}V${yBas}M${b} ${y}V${yBas}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3" fill="none"/>`;
   };
-  const X = r.chaudBout, Y = r.froidBout, D = 36, TOTAL = 320, MINI = 110;
-  const part = X + Y > 0.005 ? X / (X + Y) : 0.5;
-  const wX = Math.min(TOTAL - MINI, Math.max(MINI, TOTAL * part)), wY = TOTAL - wX;
+  const H2 = r.demiTrou, X = r.chaudBout, Y = r.froidBout, D = 36, TOTAL = 320; // vis au milieu : meme place de chaque cote
+  const wX = TOTAL / 2, wY = TOTAL / 2;
   const u2 = 492, u1 = u2 - (D + TOTAL), uc = u1 + D / 2 + wX;
   const sx = mx(uc), yc = 125;
-  $("oblong").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Trou oblong : ${fmt(X)} mm de place côté pièce (en chaud), ${fmt(Y)} mm côté extérieur (en froid), plus le diamètre de la vis">
+  $("oblong").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Trou oblong : vis au milieu, ${fmt(H2)} mm de place de chaque côté, soit ${fmt(2 * H2)} mm plus le diamètre de la vis">
     ${rect(20, 530, 90, 70, 'rx="4" style="fill:var(--elem)"')}
     ${rect(u1, u2, yc - 18, 36, 'rx="18" style="fill:var(--surface);stroke:var(--ink)" stroke-width="1.8"')}
     <circle cx="${sx}" cy="${yc}" r="15" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>
-    ${txt(uc, 166, "position à la pose", "m")}
+    ${txt(uc, 166, "vis au milieu", "m")}
     <g id="vis" style="transform:translateX(0px)"><circle cx="${sx}" cy="${yc}" r="15" style="fill:var(--sunk);stroke:var(--ink)" stroke-width="2"/>
     <path d="M${sx - 8} ${yc}H${sx + 8}M${sx} ${yc - 8}V${yc + 8}" style="stroke:var(--ink)" stroke-width="2" stroke-linecap="round"/></g>
     ${cote(uc, u1 + D / 2, 74, yc - 18, "c1")}${cote(uc, u2 - D / 2, 74, yc - 18, "c2")}
-    ${txt(uc - wX / 2, 34, "en chaud", "m")}${txt(uc - wX / 2, 58, `${fmt(X)} mm`, "v c1")}
-    ${txt(uc + wY / 2, 34, "en froid", "m")}${txt(uc + wY / 2, 58, `${fmt(Y)} mm`, "v c2")}
+    ${txt(uc - wX / 2, 34, "place", "m")}${txt(uc - wX / 2, 58, `${fmt(H2)} mm`, "v c1")}
+    ${txt(uc + wY / 2, 34, "place", "m")}${txt(uc + wY / 2, 58, `${fmt(H2)} mm`, "v c2")}
     ${cote(u1, u2, 188, yc + 18, "c0")}
-    ${txt((u1 + u2) / 2, 212, `trou : ${fmt(X + Y)} mm + Ø de la vis`, "m")}
+    ${txt((u1 + u2) / 2, 212, `trou : ${fmt(2 * H2)} mm + Ø de la vis`, "m")}
     <path d="M${mx(530)} 160V222" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3" fill="none"/>
     ${txt(20, 232, dir > 0 ? "← centre de la pièce" : "centre de la pièce →", "m", "start")}
     ${txt(530, 232, "bout de la pièce", "m", "end")}
   </svg>`;
   const sens = mx(1) - mx(0); // +1 normal, -1 miroir
-  const posVis = (T) => { // decalage de la vis (en unites du dessin) selon la temperature
-    if (T > t.tpose && t.tmax > t.tpose) return -wX * Math.min(1, (T - t.tpose) / (t.tmax - t.tpose));
-    if (T < t.tpose && t.tpose > t.tmin) return wY * Math.min(1, (t.tpose - T) / (t.tpose - t.tmin));
+  // Deplacement de la vis (en mm reels) selon la temperature : vers le centre de la piece en chaud (-), vers le bout en froid (+)
+  const depl = (T) => {
+    if (T > t.tpose && t.tmax > t.tpose) return -X * Math.min(1, (T - t.tpose) / (t.tmax - t.tpose));
+    if (T < t.tpose && t.tpose > t.tmin) return Y * Math.min(1, (t.tpose - T) / (t.tpose - t.tmin));
     return 0;
   };
   const curseur = $("oblT");
   curseur.min = t.tmin; curseur.max = t.tmax; curseur.step = 1;
   const placer = () => {
     const T = Math.min(t.tmax, Math.max(t.tmin, Number(curseur.value)));
-    $("vis").style.transform = `translateX(${posVis(T) * sens}px)`;
+    const m = depl(T), d = Math.abs(m), reste = Math.max(0, H2 - d);
+    $("vis").style.transform = `translateX(${(H2 > 0 ? (m / H2) * wX : 0) * sens}px)`;
     $("oblTval").textContent = degre(T);
-    const chaud = T > t.tpose, froid = T < t.tpose, d = (chaud ? X : Y) * Math.abs(posVis(T)) / (chaud ? wX : wY);
-    const fond = Math.abs(posVis(T)) >= (chaud ? wX : wY) - 0.01;
-    $("oblEtat").innerHTML = !chaud && !froid
-      ? `<b>À ${degre(T)} (pose)</b> : la vis est posée ici. Elle n'est pas au milieu du trou, et c'est voulu.`
-      : chaud
-        ? `<b>À ${degre(T)}</b> : la pièce s'allonge de ${fmt(d)} mm, donc la vis glisse de ${fmt(d)} mm vers le centre de la pièce${fond ? ` et arrive au fond : il faut <b>${fmt(X)} mm</b> de ce côté.` : "."}`
-        : `<b>À ${degre(T)}</b> : la pièce se raccourcit de ${fmt(d)} mm, donc la vis glisse de ${fmt(d)} mm vers le bout de la pièce${fond ? ` et arrive au fond : il faut <b>${fmt(Y)} mm</b> de ce côté.` : "."}`;
+    $("oblEtat").innerHTML = m === 0
+      ? `<b>À ${degre(T)} (pose)</b> : la vis est au milieu du trou, avec ${fmt(H2)} mm de place de chaque côté.`
+      : `<b>À ${degre(T)}</b> : la pièce ${m < 0 ? "s'allonge" : "se raccourcit"} de ${fmt(d)} mm, donc la vis glisse de ${fmt(d)} mm vers ${m < 0 ? "le centre" : "le bout"} de la pièce. Il lui reste ${fmt(reste)} mm de marge.`;
     document.querySelectorAll("#oblBtns button").forEach((b) => b.classList.toggle("on", Number(b.dataset.t) === T));
   };
   const reglages = { froid: t.tmin, pose: t.tpose, chaud: t.tmax };
@@ -249,7 +246,7 @@ function dessinerOblong(r, t) {
   curseur.value = t.tpose; curseur.oninput = placer;
   const quel = s.uPt === "centre" ? "à chaque extrémité (la pièce est fixée au centre)" : `à l'extrémité ${s.uPt === "gauche" ? "droite" : "gauche"} (la pièce est fixée ${POINTS_PIECE[s.uPt].nom})`;
   placer();
-  const pourquoi = Math.abs(X - Y) > 0.05 ? `La vis n'est pas au milieu : la pièce s'allonge de ${fmt(X)} mm en chaud mais se raccourcit de ${fmt(Y)} mm en froid, donc le trou est plus long du côté où elle bouge le plus. ` : "";
+  const pourquoi = `Règle simple pour le monteur : la vis se met au milieu du trou. Le trou est dessiné assez long pour la plus grande course (${fmt(H2)} mm de chaque côté), ce qui laisse aussi de la marge si la pose se fait à une autre température. `;
   $("oblongNote").textContent = `${pourquoi}Schéma de principe, pas à l'échelle. À prévoir ${quel}. Pour une fixation intermédiaire, la course est proportionnelle à sa distance au point fixe.`;
 }
 
@@ -299,8 +296,8 @@ function maj() {
     $("rKicker").textContent = r ? `Allongement de ${degre(t.tpose)} à ${degre(t.tmax)}` : "Dilatation de la pièce";
     if (!r) { $("rBig").textContent = "—"; $("rWhy").textContent = "Renseigne la longueur (en mm) et les températures."; $("rWarn").classList.add("hidden"); $("etats").innerHTML = ""; dessinerUne(); return; }
     $("rBig").innerHTML = `+${fmt(r.allongement)} <small>mm</small>`;
-    const bout = s.uPt === "centre" ? "de chaque côté" : "à l'extrémité libre";
-    $("rWhy").textContent = `En froid (${degre(t.tmin)}), elle se raccourcit de ${mm(r.raccourcissement)}. Course totale : ${mm(r.course)}. Trous oblongs : prévoir ${mm(r.courseBout)} ${bout}, plus le diamètre de la vis.`;
+    const bout = s.uPt === "centre" ? "à chaque extrémité" : "à l'extrémité libre";
+    $("rWhy").textContent = `En froid (${degre(t.tmin)}), elle se raccourcit de ${mm(r.raccourcissement)}. Course totale : ${mm(r.course)}. Trou oblong ${bout} : ${mm(2 * r.demiTrou)} + diamètre de la vis, vis au milieu (${mm(r.demiTrou)} de chaque côté).`;
     $("rWarn").classList.toggle("hidden", !r.incoherent);
     if (r.incoherent) $("rWarn").textContent = "La température de pose devrait être comprise entre le mini et le maxi.";
     dessinerUne(); etatsUne(t, r);
@@ -351,7 +348,7 @@ $("copyBtn").addEventListener("click", async () => {
     ta.remove();
   }
 });
-$("aboutBtn").addEventListener("click", () => toast("Joint v1.4 · conçu et développé par Hugo N."));
+$("aboutBtn").addEventListener("click", () => toast("Joint v1.5 · conçu et développé par Hugo N."));
 $("coefsBody").innerHTML = Object.values(MATERIAUX).filter((m) => m.coef).map((m) => `<tr><td>${m.nom}</td><td>${m.coef}</td></tr>`).join("");
 
 maj();
