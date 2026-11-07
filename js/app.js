@@ -21,6 +21,8 @@ try {
 const sauver = () => { try { localStorage.setItem(CLE, JSON.stringify(s)); } catch (e) { /* ignore */ } };
 
 const mm = (n, d = 1) => `${fmt(n, d)} mm`;
+// Detail du calcul : 2 decimales, et les totaux sont refaits a partir des valeurs affichees (2,76 + 2,76 = 5,52 : l'addition tombe toujours juste a l'ecran)
+const c2 = (n) => Math.round(n * 100) / 100;
 
 // ---------- Menu des applis ----------
 $("appsList").innerHTML = `<div class="apps-label">Mes outils</div>
@@ -127,19 +129,19 @@ function maj() {
   }
   $("sDil").innerHTML = `+${fmt(r.dilatation)} <small>mm</small>`;
   $("sJoint").innerHTML = `${fmt(r.joint, 0)} <small>mm</small>`;
-  $("sWhy").textContent = `Calcul exact : ${mm(r.brut)}. Les deux pièces avancent l'une vers l'autre de ${mm(r.avance)} chacune (pièce fixée au milieu : la moitié de l'allongement). Arrondi au mm supérieur.`;
+  $("sWhy").textContent = `Calcul exact : ${mm(2 * c2(r.avance), 2)}. Les deux pièces avancent l'une vers l'autre de ${mm(c2(r.avance), 2)} chacune (pièce fixée au milieu : la moitié de l'allongement). Arrondi au mm supérieur.`;
   $("sDraw").innerHTML = `<div class="b1"></div><div class="gj" style="width:${Math.max(16, Math.min(90, r.joint * 4))}px"></div><div class="b2"></div>`;
   $("sTrou").innerHTML = `${fmt(r.trou, 0)} <small>mm + Ø de la vis</small>`;
-  $("sSlot").innerHTML = `<span class="h">${mm(r.cote)}</span><span class="screw"></span><span class="h">${mm(r.cote)}</span>`;
-  $("sTrouWhy").textContent = `De chaque côté de la vis : ${mm(r.demi)} de course${r.reglage > 0 ? ` + ${mm(r.reglage, 0)} de réglage = ${mm(r.cote)}` : ""}. Trou total : ${mm(r.trouBrut)}, arrondi à ${mm(r.trou, 0)} (+ Ø de la vis). Trou à chaque extrémité, la pièce étant fixée au milieu.`;
+  $("sSlot").innerHTML = `<span class="h">${mm(c2(r.demi) + r.reglage, 2)}</span><span class="screw"></span><span class="h">${mm(c2(r.demi) + r.reglage, 2)}</span>`;
+  $("sTrouWhy").textContent = `De chaque côté de la vis : ${mm(c2(r.demi), 2)} de course${r.reglage > 0 ? ` + ${mm(r.reglage, 0)} de réglage = ${mm(c2(r.demi) + r.reglage, 2)}` : ""}. Trou total : ${mm(2 * (c2(r.demi) + r.reglage), 2)}, arrondi à ${mm(r.trou, 0)} (+ Ø de la vis). Trou à chaque extrémité, la pièce étant fixée au milieu.`;
 }
 $("sCopy").addEventListener("click", () => {
   if (!dernier) return;
   const amb = AMBIANCES[s.sAmb];
   copier([
     `Dilatation : ${NOM_MAT[s.sMat]} ${fmt(nombre(s.sLong), 0)} mm, ${amb.nom.toLowerCase()} (de ${amb.tmin} à ${amb.tmax} °C, pose à 20 °C), pièce fixée au milieu`,
-    `Dilatation de chaque pièce : +${fmt(dernier.dilatation)} mm (chaque bout avance de ${fmt(dernier.avance)} mm)`,
-    `Joint à prévoir entre deux pièces : ${fmt(dernier.joint, 0)} mm (calcul exact ${fmt(dernier.brut)} mm, arrondi au mm supérieur)`,
+    `Dilatation de chaque pièce : +${fmt(dernier.dilatation)} mm (chaque bout avance de ${fmt(c2(dernier.avance), 2)} mm)`,
+    `Joint à prévoir entre deux pièces : ${fmt(dernier.joint, 0)} mm (calcul exact ${fmt(2 * c2(dernier.avance), 2)} mm, arrondi au mm supérieur)`,
     `Trou oblong si la pièce est vissée : ${fmt(dernier.trou, 0)} mm + Ø de la vis, vis au milieu${dernier.reglage > 0 ? ` (dont réglage de pose ± ${fmt(dernier.reglage, 0)} mm)` : ""}`,
   ].join("\n"));
 });
@@ -154,6 +156,6 @@ async function copier(txt) {
     ta.remove();
   }
 }
-$("aboutBtn").addEventListener("click", () => toast("Joint v2.7 · conçu et développé par Hugo N."));
+$("aboutBtn").addEventListener("click", () => toast("Joint v2.8 · conçu et développé par Hugo N."));
 
 maj();
