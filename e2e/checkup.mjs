@@ -23,22 +23,39 @@ async function ouvrir({ largeur = 1440, hauteur = 900, sombre = false } = {}) {
 const big = (page) => page.locator("#rBig").innerText().then((t) => t.replace(/\s+/g, " ").trim());
 const pasDebordement = (page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
 
+const dot = (page, cote, k) => page.locator(`#draw .barwrap.${cote} .dot[aria-label$="${k}"]`).click();
+
 await step("Exemple de depart : 2 tubes alu de 4 m = 13,0 mm", async () => {
   const { c, page } = await ouvrir();
   verif("Resultat de depart 13,0 mm", (await big(page)) === "13,0 mm", await big(page));
-  verif("Le schema montre 3 etats", (await page.locator(".etat").count()) === 3);
+  verif("Le resultat est visible sans defiler (ordinateur)", await page.locator("#rBig").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
+  verif("Trois etats affiches", (await page.locator("#etats .etat").count()) === 3);
+  verif("Coefficient affiche en petit", /23 µm\/m·°C/.test(await page.locator("#gCoefTxt").innerText()));
   await page.screenshot({ path: `${OUT}/01-depart.png`, fullPage: true });
 
-  // Point fixe au centre des deux elements -> 7,5 mm
-  await page.locator('[data-chips="g-pt"] [data-k="centre"]').click();
-  await page.locator('[data-chips="d-pt"] [data-k="centre"]').click();
+  // Point fixe au centre des deux elements (on touche le rond du dessin) -> 7,5 mm
+  await dot(page, "g", "au centre"); await dot(page, "d", "au centre");
   verif("Points fixes au centre : 7,5 mm", (await big(page)) === "7,5 mm", await big(page));
 
   // Paroi fixe a droite : un seul element bouge
-  await page.locator('[data-chips="d-mat"] [data-k="paroi"]').click();
+  await page.selectOption("#dMat", "paroi");
   verif("Paroi fixe : 2,8 + 2 = 4,8 mm", (await big(page)) === "4,8 mm", await big(page));
-  verif("Champs de l'element de droite masques", !(await page.locator("#dLong").isVisible()));
+  verif("Longueur de l'element de droite masquee", !(await page.locator("#dLong").isVisible()));
   await page.screenshot({ path: `${OUT}/02-paroi.png`, fullPage: true });
+  await c.close();
+});
+
+await step("Unite juste apres la valeur saisie", async () => {
+  const { c, page } = await ouvrir();
+  const u = page.locator("#gLong").locator("xpath=../span[@class='u']");
+  const [boite, champ] = await Promise.all([u.locator("i").boundingBox(), page.locator("#gLong").boundingBox()]);
+  const apres = await u.evaluate((el) => el.textContent);
+  verif("Le champ affiche « 4000 mm »", apres.replace(/\s+/g, " ").trim() === "4000 mm", apres);
+  await page.fill("#gLong", "65000");
+  const l2 = await u.locator("i").boundingBox();
+  verif("L'unite suit la valeur (plus longue = plus a droite)", l2.width > boite.width && l2.x === boite.x);
+  await page.fill("#gLong", "");
+  verif("Champ vide : pas d'unite", (await u.evaluate((el) => el.textContent)) === "");
   await c.close();
 });
 
@@ -48,20 +65,35 @@ await step("Verification de l'espace prevu", async () => {
   const v = page.locator("#verdict");
   verif("10 mm avec points a l'autre bout : trop serre", (await v.getAttribute("class")).includes("touche") && /Trop serré/.test(await v.innerText()));
   await page.screenshot({ path: `${OUT}/03-verdict.png`, fullPage: true });
-  await page.locator('[data-chips="g-pt"] [data-k="centre"]').click();
-  await page.locator('[data-chips="d-pt"] [data-k="centre"]').click();
+  await dot(page, "g", "au centre"); await dot(page, "d", "au centre");
   verif("10 mm avec points au centre : c'est bon", (await v.getAttribute("class")).includes("ok") && /C'est bon/.test(await v.innerText()));
+  await c.close();
+});
+
+await step("Une seule piece", async () => {
+  const { c, page } = await ouvrir();
+  await page.click("#modeUne");
+  await page.fill("#gLong", "6000");
+  verif("Piece de 6 m en alu : +8,3 mm", (await big(page)) === "+8,3 mm", await big(page));
+  verif("Trous oblongs : course de 13,8 mm", /13,8 mm à l'extrémité libre/.test(await page.locator("#rWhy").innerText()), await page.locator("#rWhy").innerText());
+  verif("Le deuxieme element disparait", !(await page.locator("#colD").isVisible()));
+  verif("Champ « J'avais prevu » masque", !(await page.locator("#prevu").isVisible()));
+  await page.screenshot({ path: `${OUT}/06-piece.png`, fullPage: true });
+  await page.locator("#draw .dot[aria-label$='au centre']").click();
+  verif("Point fixe au centre : course de 6,9 mm de chaque cote", /6,9 mm de chaque côté/.test(await page.locator("#rWhy").innerText()), await page.locator("#rWhy").innerText());
+  await page.reload(); await page.waitForTimeout(300);
+  verif("Le mode est retrouve apres rechargement", (await page.locator("#modeUne").getAttribute("aria-selected")) === "true");
   await c.close();
 });
 
 await step("Situation, materiaux, coefficient libre et memoire des reglages", async () => {
   const { c, page } = await ouvrir();
-  await page.locator('[data-chips="amb"] [data-k="int"]').click();
+  await page.selectOption("#amb", "int");
   verif("Interieur : mini 0, maxi 40", (await page.inputValue("#tMin")) === "0" && (await page.inputValue("#tMax")) === "40");
-  verif("Interieur : 20 K x 23 x 4 x 2 + 2 = 5,7 mm", (await big(page)) === "5,7 mm", await big(page));
+  verif("Interieur : 5,7 mm", (await big(page)) === "5,7 mm", await big(page));
   await page.fill("#tMax", "80");
-  verif("Mini 0 / maxi 80 : situation personnalisee", (await page.locator('[data-chips="amb"] [data-k="perso"]').getAttribute("aria-pressed")) === "true");
-  await page.locator('[data-chips="g-mat"] [data-k="autre"]').click();
+  verif("Mini 0 / maxi 80 : situation personnalisee", (await page.inputValue("#amb")) === "perso");
+  await page.selectOption("#gMat", "autre");
   verif("Coefficient libre visible", await page.locator("#gCoef").isVisible());
   await page.fill("#gCoef", "10"); await page.fill("#gLong", "3000");
   await page.waitForTimeout(100);
@@ -81,7 +113,11 @@ await step("Donnees manquantes", async () => {
 await step("Telephone et theme sombre", async () => {
   const { c, page } = await ouvrir({ largeur: 390, hauteur: 844 });
   verif("Telephone : pas de defilement lateral", await pasDebordement(page));
+  verif("Telephone : le resultat est visible sans defiler", await page.locator("#rBig").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
   await page.screenshot({ path: `${OUT}/04-telephone.png`, fullPage: true });
+  await page.click("#modeUne");
+  verif("Telephone, une piece : pas de defilement lateral", await pasDebordement(page));
+  await page.screenshot({ path: `${OUT}/07-telephone-piece.png`, fullPage: true });
   await c.close();
   const sombre = await ouvrir({ sombre: true });
   await sombre.page.screenshot({ path: `${OUT}/05-sombre.png`, fullPage: true });
