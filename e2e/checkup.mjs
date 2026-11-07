@@ -31,6 +31,7 @@ await step("Ecran de depart : 3 m d'alu au soleil", async () => {
   verif("Calcul exact affiche (8,3 mm)", /Calcul exact : 8,3 mm/.test(await txt(page, "#sWhy")), await txt(page, "#sWhy"));
   verif("Hypothese affichee : jusqu'a 80 °C, pose a 20 °C", /jusqu.à 80 °C.*-20 °C.*20 °C/.test(await txt(page, "#sHyp")), await txt(page, "#sHyp"));
   verif("Trou oblong : 9 mm + Ø de la vis", (await txt(page, "#sTrou")) === "9 mm + Ø de la vis", await txt(page, "#sTrou"));
+  verif("Phrase du trou : course par cote, total, arrondi", /De chaque côté de la vis : 4,1 mm de course\. Trou total : 8,3 mm, arrondi à 9 mm/.test(await txt(page, "#sTrouWhy")), await txt(page, "#sTrouWhy"));
   verif("Trou oblong : 4,1 mm de chaque cote de la vis", (await txt(page, "#sSlot")) === "4,1 mm 4,1 mm", await txt(page, "#sSlot"));
   verif("Le joint est visible sans defiler (ordinateur)", await page.locator("#sJoint").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
   verif("Le champ affiche « 3000 mm »", (await page.locator("#sLong").evaluate((el) => el.value)) === "3000" && (await page.locator("#sLong + .u").evaluate((el) => el.textContent.replace(/\s+/g, " ").trim())) === "3000 mm");
@@ -59,6 +60,7 @@ await step("Calculs : longueur, materiau, situation, reglage de pose", async () 
   await page.click("#sAmb [data-k='soleil']"); await page.click("#sMat .sel-btn"); await page.click("#sMat .sel-pop [data-k='alu']"); await page.fill("#sLong", "3000");
   await page.fill("#sReg", "20");
   verif("Reglage de pose ± 20 mm : trou de 49 mm + Ø de la vis", (await txt(page, "#sTrou")) === "49 mm + Ø de la vis", await txt(page, "#sTrou"));
+  verif("Phrase avec reglage : 4,1 + 20 = 24,1 mm, total 48,3 arrondi a 49", /4,1 mm de course \+ 20 mm de réglage = 24,1 mm\. Trou total : 48,3 mm, arrondi à 49 mm/.test(await txt(page, "#sTrouWhy")), await txt(page, "#sTrouWhy"));
   verif("Reglage : 24,1 mm de chaque cote", (await txt(page, "#sSlot")) === "24,1 mm 24,1 mm", await txt(page, "#sSlot"));
   verif("Le joint ne change pas avec le reglage", (await txt(page, "#sJoint")) === "9 mm");
   await page.screenshot({ path: `${OUT}/03-reglage.png`, fullPage: true });
@@ -94,7 +96,7 @@ await step("Copie du resume, pied de page, menu des applis", async () => {
   verif("Message « Résumé copié »", /copi/i.test(await txt(page, "#toast")), await txt(page, "#toast"));
   const pied = await page.locator("footer").evaluate((el) => { const r = el.getBoundingClientRect(); return { centre: r.left + r.width / 2, page: document.documentElement.clientWidth / 2, align: getComputedStyle(el).textAlign }; });
   verif("Pied de page centre", pied.align === "center" && Math.abs(pied.centre - pied.page) < 2, JSON.stringify(pied));
-  verif("Pied de page : version 2.4", /Joint v2\.4/.test(await txt(page, "footer")), await txt(page, "footer"));
+  verif("Pied de page : version 2.5", /Joint v2\.5/.test(await txt(page, "footer")), await txt(page, "footer"));
   await page.locator("#appsMenu summary").click();
   verif("Le menu liste les applis dont Joint", (await page.locator("#appsList a").count()) === 10);
   verif("Joint s'appelle « Dilatation et joints »", /Dilatation et joints/.test(await txt(page, "#appsList")), await txt(page, "#appsList"));

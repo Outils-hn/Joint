@@ -131,7 +131,7 @@ function maj() {
   $("sDraw").innerHTML = `<div class="b1"></div><div class="gj" style="width:${Math.max(16, Math.min(90, r.joint * 4))}px"></div><div class="b2"></div>`;
   $("sTrou").innerHTML = `${fmt(r.trou, 0)} <small>mm + Ø de la vis</small>`;
   $("sSlot").innerHTML = `<span class="h">${mm(r.cote)}</span><span class="screw"></span><span class="h">${mm(r.cote)}</span>`;
-  $("sTrouWhy").textContent = `Vis au milieu du trou : ${mm(r.cote)} de chaque côté. Dilatation ${mm(r.trouBrut - 2 * r.reglage)}${r.reglage > 0 ? ` + réglage 2 × ${mm(r.reglage, 0)}` : ""}. Arrondi au mm supérieur. Cas le plus défavorable : la pièce est fixée à l'autre bout.`;
+  $("sTrouWhy").textContent = `De chaque côté de la vis : ${mm(r.demi)} de course${r.reglage > 0 ? ` + ${mm(r.reglage, 0)} de réglage = ${mm(r.cote)}` : ""}. Trou total : ${mm(r.trouBrut)}, arrondi à ${mm(r.trou, 0)} (+ Ø de la vis). La pièce est supposée fixée à l'autre bout.`;
 }
 $("sCopy").addEventListener("click", () => {
   if (!dernier) return;
@@ -154,6 +154,6 @@ async function copier(txt) {
     ta.remove();
   }
 }
-$("aboutBtn").addEventListener("click", () => toast("Joint v2.4 · conçu et développé par Hugo N."));
+$("aboutBtn").addEventListener("click", () => toast("Joint v2.5 · conçu et développé par Hugo N."));
 
 maj();
