@@ -1,6 +1,6 @@
 # Joint
 
-Dilatation d'une pièce (alu, acier, inox, verre) : de combien elle dilate, quel joint prévoir entre deux pièces, quel trou oblong si elle est vissée (vis au milieu, réglage de pose facultatif). Cas le plus défavorable, pose à 20 °C, résultats arrondis au mm supérieur.
+Dilatation d'une pièce (alu, acier, inox, verre) : de combien elle dilate, quel joint prévoir entre deux pièces, quel trou oblong si elle est vissée (vis au milieu, réglage de pose facultatif). Pièce fixée au milieu (ou à un bout), pose à 20 °C, résultats arrondis au mm supérieur.
 
 - Sans compte, sans base de données : tout se calcule dans le navigateur ; les réglages sont gardés sur l'appareil.
 - Calculs dans `js/core.js` (testés : `npm test`), affichage dans `js/app.js`.
