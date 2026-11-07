@@ -5,7 +5,7 @@ const $ = (id) => document.getElementById(id);
 const CLE = "joint.reglages";
 const APPLIS = [
   ["Access", "Annuaire fournisseurs", "#C2255C"], ["Check", "Notes & tâches", "#4338CA"], ["Format", "Débit de panneaux", "#FF4D00"],
-  ["Index", "Fiches techniques", "#6D4AFF"], ["Joint", "Espace entre deux éléments", "#0B7285"], ["Linear", "Mise en barre", "#2B50FF"],
+  ["Index", "Fiches techniques", "#6D4AFF"], ["Joint", "Dilatation et joints", "#0B7285"], ["Linear", "Mise en barre", "#2B50FF"],
   ["Masse", "Poids des éléments", "#9A4A3A"], ["Strate", "Épaisseurs d'isolation", "#D4A20B"], ["Trame", "Répartition de perçages", "#0E9F6E"],
 ];
 
