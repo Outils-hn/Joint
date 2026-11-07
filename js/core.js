@@ -11,7 +11,7 @@ export const MATERIAUX = {
 
 /** Temperatures extremes selon l'endroit ou la piece est posee (pose a 20 °C). */
 export const AMBIANCES = {
-  int: { nom: "Intérieur", tmin: 10, tmax: 30 },
+  int: { nom: "Intérieur", tmin: 10, tmax: 25 },
   ombre: { nom: "Extérieur à l'ombre", tmin: -20, tmax: 40 },
   soleil: { nom: "Extérieur au soleil", tmin: -20, tmax: 80 },
 };

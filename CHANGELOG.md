@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.4 — 7 novembre 2026
+
+- Nouveauté : en intérieur, Joint suppose maintenant 10 à 25 °C (bâtiments performants thermiquement) : la dilatation est plus faible.
+
 ## 2.3 — 7 novembre 2026
 
 - Nouveauté : en intérieur, Joint suppose maintenant 10 à 30 °C (au lieu de 0 à 40 °C), plus proche d'un local chauffé : la dilatation est plus faible.
