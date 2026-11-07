@@ -11,12 +11,13 @@ const verif = (nom, ok, detail = "") => lignes.push(`${ok ? "OK    " : "ECHEC "}
 const step = async (nom, fn) => { try { await fn(); } catch (e) { verif(nom, false, e.message.split("\n")[0].slice(0, 180)); } };
 const browser = await chromium.launch();
 
-async function ouvrir({ largeur = 1440, hauteur = 900, sombre = false } = {}) {
+async function ouvrir({ largeur = 1440, hauteur = 900, sombre = false, avance = true } = {}) {
   const c = await browser.newContext({ viewport: { width: largeur, height: hauteur } });
   await c.addInitScript((d) => { if (d) localStorage.setItem("outils-theme", "dark"); }, sombre);
   const page = await c.newPage();
   page.on("pageerror", (e) => verif("Aucune erreur JavaScript", false, e.message.slice(0, 150)));
   await page.goto(BASE, { waitUntil: "load" });
+  if (avance) await page.evaluate(() => { document.getElementById("avance").open = true; }); // les reglages detailles sont replies par defaut
   await page.waitForTimeout(300);
   return { c, page };
 }
@@ -26,10 +27,38 @@ const pasDebordement = (page) => page.evaluate(() => document.documentElement.sc
 const choisir = async (page, id, k) => { await page.click(`#${id} .sel-btn`); await page.click(`#${id} .sel-pop [data-k="${k}"]`); };
 const dot = (page, cote, k) => page.locator(`#draw .barwrap.${cote} .dot[aria-label$="${k}"]`).click();
 
+await step("Ecran simple : une piece, sa dilatation, le joint entre deux pieces", async () => {
+  const { c, page } = await ouvrir({ avance: false });
+  const txt = (id) => page.locator(id).innerText().then((t) => t.replace(/\s+/g, " ").trim());
+  verif("Depart : 3 m d'alu au soleil dilate de +4,1 mm", (await txt("#sDil")) === "+4,1 mm", await txt("#sDil"));
+  verif("Joint entre deux pieces : 9 mm (8,28 arrondi)", (await txt("#sJoint")) === "9 mm", await txt("#sJoint"));
+  verif("Calcul exact affiche (8,3 mm)", /Calcul exact : 8,3 mm/.test(await txt("#sWhy")), await txt("#sWhy"));
+  verif("Le resultat est visible sans defiler (ordinateur)", await page.locator("#sJoint").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
+  verif("Reglages detailles replies", !(await page.locator("#modeDeux").isVisible()));
+  verif("Le champ affiche « 3000 mm »", (await page.locator("#sLong").evaluate((el) => el.value)) === "3000");
+  await page.screenshot({ path: `${OUT}/00-simple.png`, fullPage: true });
+  await page.fill("#sLong", "6000");
+  verif("6 m d'alu : +8,3 mm, joint 17 mm", (await txt("#sDil")) === "+8,3 mm" && (await txt("#sJoint")) === "17 mm", `${await txt("#sDil")} / ${await txt("#sJoint")}`);
+  await page.click("#sAmb [data-k='ombre']");
+  verif("A l'ombre (40 °C) : +2,8 mm, joint 6 mm", (await txt("#sDil")) === "+2,8 mm" && (await txt("#sJoint")) === "6 mm", `${await txt("#sDil")} / ${await txt("#sJoint")}`);
+  await page.click("#sMat .sel-btn"); await page.click("#sMat .sel-pop [data-k='verre']");
+  verif("Verre 6 m a l'ombre : +1,1 mm, joint 3 mm", (await txt("#sDil")) === "+1,1 mm" && (await txt("#sJoint")) === "3 mm", `${await txt("#sDil")} / ${await txt("#sJoint")}`);
+  await page.fill("#sLong", "");
+  verif("Champ vide : pas de resultat", (await txt("#sJoint")) === "—" && (await page.locator("#sCopy").isDisabled()));
+  await page.fill("#sLong", "3000");
+  await page.click("#avance summary");
+  verif("Plus d'options : l'ancien calcul est toujours la", await page.locator("#modeDeux").isVisible() && (await big(page)) === "13,0 mm", await big(page));
+  await c.close();
+  const t = await ouvrir({ largeur: 390, hauteur: 844, avance: false });
+  verif("Telephone : pas de debordement", await pasDebordement(t.page));
+  verif("Telephone : le joint est visible sans defiler", await t.page.locator("#sJoint").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
+  await t.page.screenshot({ path: `${OUT}/00-simple-tel.png`, fullPage: true });
+  await t.c.close();
+});
+
 await step("Exemple de depart : 2 tubes alu de 4 m = 13,0 mm", async () => {
   const { c, page } = await ouvrir();
   verif("Resultat de depart 13,0 mm", (await big(page)) === "13,0 mm", await big(page));
-  verif("Le resultat est visible sans defiler (ordinateur)", await page.locator("#rBig").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
   verif("Trois etats affiches", (await page.locator("#etats .etat").count()) === 3);
   verif("Coefficient affiche en petit", /23 × 10⁻⁶ K⁻¹/.test(await page.locator("#gCoefTxt").innerText()));
   await page.screenshot({ path: `${OUT}/01-depart.png`, fullPage: true });
@@ -128,7 +157,6 @@ await step("Donnees manquantes", async () => {
 await step("Telephone et theme sombre", async () => {
   const { c, page } = await ouvrir({ largeur: 390, hauteur: 844 });
   verif("Telephone : pas de defilement lateral", await pasDebordement(page));
-  verif("Telephone : le resultat est visible sans defiler", await page.locator("#rBig").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
   await page.screenshot({ path: `${OUT}/04-telephone.png`, fullPage: true });
   await page.click("#modeUne");
   verif("Telephone, une piece : pas de defilement lateral", await pasDebordement(page));
