@@ -115,6 +115,7 @@ function maj() {
   majSelect("sMat"); majChamps(); majUnites();
   document.querySelectorAll("#sAmb button").forEach((b) => { const on = b.dataset.k === s.sAmb; b.setAttribute("aria-checked", String(on)); b.classList.toggle("on", on); });
   const amb = AMBIANCES[s.sAmb];
+  $("sHyp").innerHTML = `Hypothèse : la température monte jusqu'à <b>${amb.tmax} °C</b> (et descend à ${amb.tmin} °C), la pièce étant posée à 20 °C.`;
   const r = jointSimple({ coef: MATERIAUX[s.sMat].coef, longueur: nombre(s.sLong), tmin: amb.tmin, tmax: amb.tmax, reglage: nombre(s.sReg) });
   dernier = r;
   $("sCopy").disabled = !r;
@@ -153,6 +154,6 @@ async function copier(txt) {
     ta.remove();
   }
 }
-$("aboutBtn").addEventListener("click", () => toast("Joint v2.1 · conçu et développé par Hugo N."));
+$("aboutBtn").addEventListener("click", () => toast("Joint v2.2 · conçu et développé par Hugo N."));
 
 maj();

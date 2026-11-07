@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.2 — 7 novembre 2026
+
+- Nouveauté : Joint affiche l'hypothèse de température sous le choix de l'endroit (par exemple « jusqu'à 80 °C, pose à 20 °C ») pour comprendre d'où vient la dilatation.
+
 ## 2.1 — 7 novembre 2026
 
 - Nouveauté : Joint est réduit à l'essentiel : la pièce (matériau, longueur, endroit) donne sa dilatation, le joint à prévoir entre deux pièces et le trou oblong si elle est vissée, avec un réglage de pose facultatif (par exemple ± 20 mm). Les anciennes options détaillées sont supprimées.
