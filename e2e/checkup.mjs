@@ -28,11 +28,11 @@ await step("Ecran de depart : 3 m d'alu au soleil", async () => {
   const { c, page } = await ouvrir();
   verif("Dilatation +4,1 mm", (await txt(page, "#sDil")) === "+4,1 mm", await txt(page, "#sDil"));
   verif("Joint entre deux pieces : 5 mm (4,14 arrondi), piece fixee au milieu", (await txt(page, "#sJoint")) === "5 mm", await txt(page, "#sJoint"));
-  verif("Calcul exact affiche (4,1 mm)", /Calcul exact : 4,1 mm.*2,1 mm chacune.*au milieu/.test(await txt(page, "#sWhy")), await txt(page, "#sWhy"));
+  verif("Calcul exact affiche (4,1 mm)", /Calcul exact : 4,14 mm.*2,07 mm chacune.*au milieu/.test(await txt(page, "#sWhy")), await txt(page, "#sWhy"));
   verif("Hypothese affichee : jusqu'a 80 °C, pose a 20 °C", /jusqu.à 80 °C.*-20 °C.*20 °C/.test(await txt(page, "#sHyp")), await txt(page, "#sHyp"));
   verif("Trou oblong : 5 mm + Ø de la vis", (await txt(page, "#sTrou")) === "5 mm + Ø de la vis", await txt(page, "#sTrou"));
-  verif("Phrase du trou : course par cote, total, arrondi", /De chaque côté de la vis : 2,1 mm de course\. Trou total : 4,1 mm, arrondi à 5 mm/.test(await txt(page, "#sTrouWhy")), await txt(page, "#sTrouWhy"));
-  verif("Trou oblong : 2,1 mm de chaque cote de la vis", (await txt(page, "#sSlot")) === "2,1 mm 2,1 mm", await txt(page, "#sSlot"));
+  verif("Phrase du trou : course par cote, total, arrondi", /De chaque côté de la vis : 2,07 mm de course\. Trou total : 4,14 mm, arrondi à 5 mm/.test(await txt(page, "#sTrouWhy")), await txt(page, "#sTrouWhy"));
+  verif("Trou oblong : 2,07 mm de chaque cote de la vis", (await txt(page, "#sSlot")) === "2,07 mm 2,07 mm", await txt(page, "#sSlot"));
   verif("Plus de choix de fixation : un seul ecran simple", (await page.locator("#sFix").count()) === 0);
   verif("Le joint est visible sans defiler (ordinateur)", await page.locator("#sJoint").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
   verif("Le champ affiche « 3000 mm »", (await page.locator("#sLong").evaluate((el) => el.value)) === "3000" && (await page.locator("#sLong + .u").evaluate((el) => el.textContent.replace(/\s+/g, " ").trim())) === "3000 mm");
@@ -48,6 +48,9 @@ await step("Calculs : longueur, materiau, situation, reglage de pose", async () 
   await page.click("#sAmb [data-k='ombre']");
   verif("Hypothese a l'ombre : jusqu'a 40 °C", /jusqu.à 40 °C/.test(await txt(page, "#sHyp")), await txt(page, "#sHyp"));
   verif("A l'ombre (40 °C) : +2,8 mm, joint 3 mm", (await txt(page, "#sDil")) === "+2,8 mm" && (await txt(page, "#sJoint")) === "3 mm", `${await txt(page, "#sDil")} / ${await txt(page, "#sJoint")}`);
+  await page.fill("#sLong", "12000");
+  verif("12 m a l'ombre : l'addition tombe juste (2,76 + 2,76 = 5,52)", /Calcul exact : 5,52 mm.*2,76 mm chacune/.test(await txt(page, "#sWhy")), await txt(page, "#sWhy"));
+  await page.fill("#sLong", "6000");
   await page.click("#sAmb [data-k='int']");
   verif("Interieur (10 a 25 °C), 6 m d'alu : +0,7 mm, joint 1 mm", /jusqu.à 25 °C/.test(await txt(page, "#sHyp")) && (await txt(page, "#sDil")) === "+0,7 mm" && (await txt(page, "#sJoint")) === "1 mm", `${await txt(page, "#sHyp")} / ${await txt(page, "#sDil")} / ${await txt(page, "#sJoint")}`);
   await page.click("#sAmb [data-k='ombre']");
@@ -61,8 +64,8 @@ await step("Calculs : longueur, materiau, situation, reglage de pose", async () 
   await page.click("#sAmb [data-k='soleil']"); await page.click("#sMat .sel-btn"); await page.click("#sMat .sel-pop [data-k='alu']"); await page.fill("#sLong", "3000");
   await page.fill("#sReg", "20");
   verif("Reglage de pose ± 20 mm : trou de 45 mm + Ø de la vis", (await txt(page, "#sTrou")) === "45 mm + Ø de la vis", await txt(page, "#sTrou"));
-  verif("Phrase avec reglage : 2,1 + 20 = 22,1 mm, total 44,1 arrondi a 45", /2,1 mm de course \+ 20 mm de réglage = 22,1 mm\. Trou total : 44,1 mm, arrondi à 45 mm/.test(await txt(page, "#sTrouWhy")), await txt(page, "#sTrouWhy"));
-  verif("Reglage : 22,1 mm de chaque cote", (await txt(page, "#sSlot")) === "22,1 mm 22,1 mm", await txt(page, "#sSlot"));
+  verif("Phrase avec reglage : 2,07 + 20 = 22,07 mm, total 44,14 arrondi a 45", /2,07 mm de course \+ 20 mm de réglage = 22,07 mm\. Trou total : 44,14 mm, arrondi à 45 mm/.test(await txt(page, "#sTrouWhy")), await txt(page, "#sTrouWhy"));
+  verif("Reglage : 22,07 mm de chaque cote", (await txt(page, "#sSlot")) === "22,07 mm 22,07 mm", await txt(page, "#sSlot"));
   verif("Le joint ne change pas avec le reglage", (await txt(page, "#sJoint")) === "5 mm");
   await page.screenshot({ path: `${OUT}/03-reglage.png`, fullPage: true });
   await page.fill("#sLong", "");
@@ -97,7 +100,7 @@ await step("Copie du resume, pied de page, menu des applis", async () => {
   verif("Message « Résumé copié »", /copi/i.test(await txt(page, "#toast")), await txt(page, "#toast"));
   const pied = await page.locator("footer").evaluate((el) => { const r = el.getBoundingClientRect(); return { centre: r.left + r.width / 2, page: document.documentElement.clientWidth / 2, align: getComputedStyle(el).textAlign }; });
   verif("Pied de page centre", pied.align === "center" && Math.abs(pied.centre - pied.page) < 2, JSON.stringify(pied));
-  verif("Pied de page : version 2.7", /Joint v2\.7/.test(await txt(page, "footer")), await txt(page, "footer"));
+  verif("Pied de page : version 2.8", /Joint v2\.8/.test(await txt(page, "footer")), await txt(page, "footer"));
   await page.locator("#appsMenu summary").click();
   verif("Le menu liste les applis dont Joint", (await page.locator("#appsList a").count()) === 10);
   verif("Joint s'appelle « Dilatation et joints »", /Dilatation et joints/.test(await txt(page, "#appsList")), await txt(page, "#appsList"));
