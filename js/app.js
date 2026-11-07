@@ -6,7 +6,7 @@ const CLE = "joint.reglages";
 const APPLIS = [
   ["Access", "Annuaire fournisseurs", "#C2255C"], ["Check", "Notes & tâches", "#4338CA"], ["Format", "Débit de panneaux", "#FF4D00"],
   ["Index", "Fiches techniques", "#6D4AFF"], ["Joint", "Dilatation et joints", "#0B7285"], ["Linear", "Mise en barre", "#2B50FF"],
-  ["Masse", "Poids des éléments", "#9A4A3A"], ["Strate", "Épaisseurs d'isolation", "#D4A20B"], ["Trame", "Répartition de perçages", "#0E9F6E"],
+  ["Masse", "Poids des éléments", "#9A4A3A"], ["Membrane", "Étanchéité", "#B45309"], ["Strate", "Épaisseurs d'isolation", "#D4A20B"], ["Trame", "Répartition de perçages", "#0E9F6E"],
 ];
 
 // Cas de depart : 3 m d'alu en plein soleil
@@ -156,6 +156,6 @@ async function copier(txt) {
     ta.remove();
   }
 }
-$("aboutBtn").addEventListener("click", () => toast("Joint v2.8 · conçu et développé par Hugo N."));
+$("aboutBtn").addEventListener("click", () => toast("Joint v2.9 · conçu et développé par Hugo N."));
 
 maj();
