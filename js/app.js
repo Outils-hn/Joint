@@ -10,14 +10,13 @@ const APPLIS = [
 ];
 
 // Cas de depart : 3 m d'alu en plein soleil
-const DEFAUT = { sMat: "alu", sLong: "3000", sAmb: "soleil", sFix: "milieu", sReg: "" };
+const DEFAUT = { sMat: "alu", sLong: "3000", sAmb: "soleil", sReg: "" };
 let s = { ...DEFAUT };
 try {
   const lu = JSON.parse(localStorage.getItem(CLE) ?? "null");
   if (lu && typeof lu === "object") for (const k of Object.keys(DEFAUT)) if (typeof lu[k] === "string") s[k] = lu[k];
   if (!MATERIAUX[s.sMat]) s.sMat = DEFAUT.sMat;
   if (!AMBIANCES[s.sAmb]) s.sAmb = DEFAUT.sAmb;
-  if (s.sFix !== "milieu" && s.sFix !== "bout") s.sFix = DEFAUT.sFix;
 } catch (e) { /* stockage bloque : on part des valeurs par defaut */ }
 const sauver = () => { try { localStorage.setItem(CLE, JSON.stringify(s)); } catch (e) { /* ignore */ } };
 
@@ -110,17 +109,14 @@ function majUnites() {
 // ---------- Ecran : la piece, sa dilatation, le joint, le trou oblong ----------
 $("sAmb").innerHTML = Object.keys(AMBIANCES).reverse().map((k) => `<button type="button" role="radio" data-k="${k}">${AMB_NOMS[k]}</button>`).join("");
 $("sAmb").addEventListener("click", (e) => { const b = e.target.closest("button[data-k]"); if (b) { s.sAmb = b.dataset.k; maj(); } });
-const FIX_NOMS = { milieu: "Au milieu", bout: "À un bout" };
-$("sFix").innerHTML = Object.keys(FIX_NOMS).map((k) => `<button type="button" role="radio" data-k="${k}">${FIX_NOMS[k]}</button>`).join("");
-$("sFix").addEventListener("click", (e) => { const b = e.target.closest("button[data-k]"); if (b) { s.sFix = b.dataset.k; maj(); } });
 let dernier = null;
 function maj() {
   sauver();
   majSelect("sMat"); majChamps(); majUnites();
-  for (const [id, cle] of [["sAmb", "sAmb"], ["sFix", "sFix"]]) document.querySelectorAll(`#${id} button`).forEach((b) => { const on = b.dataset.k === s[cle]; b.setAttribute("aria-checked", String(on)); b.classList.toggle("on", on); });
+  for (const [id, cle] of [["sAmb", "sAmb"]]) document.querySelectorAll(`#${id} button`).forEach((b) => { const on = b.dataset.k === s[cle]; b.setAttribute("aria-checked", String(on)); b.classList.toggle("on", on); });
   const amb = AMBIANCES[s.sAmb];
   $("sHyp").innerHTML = `Hypothèse : la température monte jusqu'à <b>${amb.tmax} °C</b> (et descend à ${amb.tmin} °C), la pièce étant posée à 20 °C.`;
-  const r = jointSimple({ coef: MATERIAUX[s.sMat].coef, longueur: nombre(s.sLong), tmin: amb.tmin, tmax: amb.tmax, reglage: nombre(s.sReg), fixe: s.sFix });
+  const r = jointSimple({ coef: MATERIAUX[s.sMat].coef, longueur: nombre(s.sLong), tmin: amb.tmin, tmax: amb.tmax, reglage: nombre(s.sReg) });
   dernier = r;
   $("sCopy").disabled = !r;
   if (!r) {
@@ -131,17 +127,17 @@ function maj() {
   }
   $("sDil").innerHTML = `+${fmt(r.dilatation)} <small>mm</small>`;
   $("sJoint").innerHTML = `${fmt(r.joint, 0)} <small>mm</small>`;
-  $("sWhy").textContent = `Calcul exact : ${mm(r.brut)}. Les deux pièces avancent l'une vers l'autre de ${mm(r.avance)} chacune (${s.sFix === "bout" ? "pièce fixée à un bout : tout l'allongement" : "pièce fixée au milieu : la moitié de l'allongement"}). Arrondi au mm supérieur.`;
+  $("sWhy").textContent = `Calcul exact : ${mm(r.brut)}. Les deux pièces avancent l'une vers l'autre de ${mm(r.avance)} chacune (pièce fixée au milieu : la moitié de l'allongement). Arrondi au mm supérieur.`;
   $("sDraw").innerHTML = `<div class="b1"></div><div class="gj" style="width:${Math.max(16, Math.min(90, r.joint * 4))}px"></div><div class="b2"></div>`;
   $("sTrou").innerHTML = `${fmt(r.trou, 0)} <small>mm + Ø de la vis</small>`;
   $("sSlot").innerHTML = `<span class="h">${mm(r.cote)}</span><span class="screw"></span><span class="h">${mm(r.cote)}</span>`;
-  $("sTrouWhy").textContent = `De chaque côté de la vis : ${mm(r.demi)} de course${r.reglage > 0 ? ` + ${mm(r.reglage, 0)} de réglage = ${mm(r.cote)}` : ""}. Trou total : ${mm(r.trouBrut)}, arrondi à ${mm(r.trou, 0)} (+ Ø de la vis). ${s.sFix === "bout" ? "Trou à l'extrémité libre, la pièce étant fixée à l'autre bout." : "Trou à chaque extrémité, la pièce étant fixée au milieu."}`;
+  $("sTrouWhy").textContent = `De chaque côté de la vis : ${mm(r.demi)} de course${r.reglage > 0 ? ` + ${mm(r.reglage, 0)} de réglage = ${mm(r.cote)}` : ""}. Trou total : ${mm(r.trouBrut)}, arrondi à ${mm(r.trou, 0)} (+ Ø de la vis). Trou à chaque extrémité, la pièce étant fixée au milieu.`;
 }
 $("sCopy").addEventListener("click", () => {
   if (!dernier) return;
   const amb = AMBIANCES[s.sAmb];
   copier([
-    `Dilatation : ${NOM_MAT[s.sMat]} ${fmt(nombre(s.sLong), 0)} mm, ${amb.nom.toLowerCase()} (de ${amb.tmin} à ${amb.tmax} °C, pose à 20 °C), pièce fixée ${s.sFix === "bout" ? "à un bout" : "au milieu"}`,
+    `Dilatation : ${NOM_MAT[s.sMat]} ${fmt(nombre(s.sLong), 0)} mm, ${amb.nom.toLowerCase()} (de ${amb.tmin} à ${amb.tmax} °C, pose à 20 °C), pièce fixée au milieu`,
     `Dilatation de chaque pièce : +${fmt(dernier.dilatation)} mm (chaque bout avance de ${fmt(dernier.avance)} mm)`,
     `Joint à prévoir entre deux pièces : ${fmt(dernier.joint, 0)} mm (calcul exact ${fmt(dernier.brut)} mm, arrondi au mm supérieur)`,
     `Trou oblong si la pièce est vissée : ${fmt(dernier.trou, 0)} mm + Ø de la vis, vis au milieu${dernier.reglage > 0 ? ` (dont réglage de pose ± ${fmt(dernier.reglage, 0)} mm)` : ""}`,
@@ -158,6 +154,6 @@ async function copier(txt) {
     ta.remove();
   }
 }
-$("aboutBtn").addEventListener("click", () => toast("Joint v2.6 · conçu et développé par Hugo N."));
+$("aboutBtn").addEventListener("click", () => toast("Joint v2.7 · conçu et développé par Hugo N."));
 
 maj();
