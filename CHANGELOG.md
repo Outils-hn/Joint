@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.9 — 7 novembre 2026
+
+- Nouveauté : le menu des applis propose maintenant Membrane (étanchéité).
+
 ## 2.8 — 7 novembre 2026
 
 - Nouveauté : dans le détail du calcul, les nombres sont donnés au centième de mm et les additions tombent juste (2,76 + 2,76 = 5,52, plus « 2,8 + 2,8 = 5,5 »).

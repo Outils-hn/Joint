@@ -43,7 +43,7 @@ h1, h2, h3 { margin: 0; }
 .apps-menu a { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 5px; color: var(--ink); text-decoration: none; font-size: 14px; }
 .apps-menu a:hover, .apps-menu a:focus-visible { background: var(--sunk); }
 .apps-menu .sw { width: 10px; height: 10px; border-radius: 2px; flex: none; }
-.apps-menu .nm { width: 56px; flex: none; font-weight: 500; }
+.apps-menu .nm { width: 82px; flex: none; font-weight: 500; }
 .apps-menu .rl { font-size: 12px; color: var(--muted); }
 .apps-menu .ck { margin-left: auto; }
 .apps-sep { height: 1px; background: var(--line); margin: 4px 8px; }
