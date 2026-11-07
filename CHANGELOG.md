@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 1.5 — 7 novembre 2026
+
+- Nouveauté : le trou oblong est maintenant donné pour une vis posée au milieu, avec la même place de chaque côté : une seule cote à dessiner, aucune consigne compliquée pour les monteurs. Le curseur de température montre la marge qui reste.
+
 ## 1.4 — 7 novembre 2026
 
 - Nouveauté : le schéma du trou oblong devient interactif : tu fais glisser la température (ou touches Froid / Pose / Chaud) et tu vois la vis se déplacer dans le trou, avec une phrase qui explique pourquoi le trou est plus long d'un côté que de l'autre.

@@ -107,6 +107,8 @@ export function piece({ e, tmin, tpose, tmax }) {
     courseBout: Math.max(p.partG, p.partD) * course,
     // Au bout qui bouge le plus : de combien la piece avance en chaud (le trou doit laisser cette place cote piece)
     // et de combien elle recule en froid (place a laisser cote exterieur).
+    // Trou oblong simple pour le monteur : vis au milieu, meme place de chaque cote (la plus grande des deux courses)
+    demiTrou: Math.max(p.partG, p.partD) * Math.max(allongement, raccourcissement),
     chaudBout: Math.max(p.partG, p.partD) * allongement,
     froidBout: Math.max(p.partG, p.partD) * raccourcissement,
     incoherent: !(tmin <= tpose && tpose <= tmax),
@@ -119,6 +121,6 @@ export function resumePiece({ e, tmin, tpose, tmax }, r, nom) {
     `Dilatation d'une pièce : ${nom} ${fmt(e.longueur, 0)} mm, point fixe ${POINTS_PIECE[e.point].nom}`,
     `Températures : ${fmt(tmin, 0)} °C à ${fmt(tmax, 0)} °C, pose à ${fmt(tpose, 0)} °C`,
     `Allongement en chaud : +${fmt(r.allongement)} mm · raccourcissement en froid : −${fmt(r.raccourcissement)} mm (course totale ${fmt(r.course)} mm)`,
-    `Trous oblongs : course de ${fmt(r.courseBout)} mm à l'extrémité qui bouge le plus (+ diamètre de la vis)`,
+    `Trou oblong : ${fmt(2 * r.demiTrou)} mm + diamètre de la vis, vis au milieu (${fmt(r.demiTrou)} mm de chaque côté)`,
   ].join("\n");
 }
