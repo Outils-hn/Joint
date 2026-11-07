@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.7 — 7 novembre 2026
+
+- Nouveauté : Joint ne demande plus comment la pièce est fixée : elle est toujours fixée au milieu, un écran plus simple.
+
 ## 2.6 — 7 novembre 2026
 
 - Nouveauté : Joint demande comment la pièce est fixée : « au milieu » (par défaut, chaque bout n'avance que de la moitié) ou « à un bout ». Le joint et le trou oblong sont donc deux fois plus petits dans le cas courant.

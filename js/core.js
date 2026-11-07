@@ -33,14 +33,14 @@ export const variation = (coef, longueurMm, ecart) => coef * 1e-6 * longueurMm *
 
 /**
  * Une piece : de combien elle dilate, quel joint entre deux pieces identiques, quel trou oblong si elle est vissee.
- * Fixation : « milieu » (cas courant : chaque bout n'avance que de la moitie de la dilatation) ou « bout » (cas le plus defavorable : un bout avance de toute la dilatation).
+ * La piece est fixee au milieu : chaque bout n'avance que de la moitie de la dilatation.
  * Trou oblong : vis au milieu du trou, meme place de chaque cote = la plus grande des deux courses (chaud / froid) du bout + le reglage de pose voulu de chaque cote.
  * Joint et trou sont arrondis au mm superieur.
  */
-export function jointSimple({ coef, longueur, tpose = 20, tmin, tmax, reglage = 0, fixe = "milieu" }) {
+export function jointSimple({ coef, longueur, tpose = 20, tmin, tmax, reglage = 0 }) {
   if (![coef, longueur, tpose, tmin, tmax].every(Number.isFinite) || longueur <= 0) return null;
   const reg = Number.isFinite(reglage) && reglage > 0 ? reglage : 0;
-  const part = fixe === "bout" ? 1 : 0.5;
+  const part = 0.5; // fixee au milieu
   const dilatation = variation(coef, longueur, Math.max(0, tmax - tpose)); // dilatation de toute la piece
   const raccourcissement = variation(coef, longueur, Math.max(0, tpose - tmin));
   const avance = part * dilatation; // ce dont un bout avance vers le joint
