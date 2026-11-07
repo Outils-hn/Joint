@@ -62,10 +62,50 @@ appliquerTheme(themeActuel());
 // ---------- Choix : menus et champs ----------
 const NOM_MAT = Object.fromEntries(Object.entries(MATERIAUX).map(([k, v]) => [k, v.nom]));
 const AMB_NOMS = { soleil: "Extérieur au soleil", ombre: "Extérieur à l'ombre", int: "Intérieur", perso: "Personnalisé" };
-const optionsMat = (avecParoi) => Object.entries(MATERIAUX).map(([k, v]) => `<option value="${k}">${v.nom === "Autre" ? "Autre…" : v.nom}</option>`).join("") + (avecParoi ? '<option value="paroi">Paroi fixe</option>' : "");
-$("gMat").innerHTML = optionsMat(false);
-$("dMat").innerHTML = optionsMat(true);
-$("amb").innerHTML = ["soleil", "ombre", "int", "perso"].map((k) => `<option value="${k}">${AMB_NOMS[k]}</option>`).join("");
+
+// Menus de choix maison (plus jolis que les menus du navigateur) : bouton + liste de choix avec une pastille de couleur
+const MAT_META = (k) => (MATERIAUX[k]?.coef != null ? `${MATERIAUX[k].coef} × 10⁻⁶` : "");
+const SELECTS = {
+  gMat: { get: () => s.gMat, set: (k) => { s.gMat = k; }, opts: () => Object.keys(MATERIAUX).map((k) => ({ k, nom: k === "autre" ? "Autre…" : MATERIAUX[k].nom, meta: MAT_META(k), sw: `sw-${k}` })) },
+  dMat: { get: () => s.dMat, set: (k) => { s.dMat = k; }, opts: () => [...Object.keys(MATERIAUX).map((k) => ({ k, nom: k === "autre" ? "Autre…" : MATERIAUX[k].nom, meta: MAT_META(k), sw: `sw-${k}` })), { k: "paroi", nom: "Paroi fixe (mur)", meta: "ne bouge pas", sw: "sw-paroi", sep: true }] },
+  amb: { get: () => (AMBIANCES[s.amb] ? s.amb : "perso"), set: (k) => { s.amb = k; if (AMBIANCES[k]) { s.tMin = String(AMBIANCES[k].tmin); s.tMax = String(AMBIANCES[k].tmax); } },
+    opts: () => ["soleil", "ombre", "int", "perso"].map((k) => ({ k, nom: AMB_NOMS[k], meta: AMBIANCES[k] ? `${AMBIANCES[k].tmin} / ${AMBIANCES[k].tmax} °C` : "", sw: `sw-${k}` })) },
+};
+function fermerMenus(sauf) {
+  document.querySelectorAll(".sel-pop").forEach((p) => {
+    if (p.parentElement === sauf) return;
+    p.classList.add("hidden"); p.parentElement.querySelector(".sel-btn").setAttribute("aria-expanded", "false");
+  });
+}
+function majSelect(id) {
+  const box = $(id), def = SELECTS[id], cur = def.get(), liste = def.opts();
+  const o = liste.find((x) => x.k === cur) ?? liste[0];
+  box.querySelector(".sw").className = `sw ${o.sw}`;
+  box.querySelector(".sel-t").textContent = o.nom;
+  const pop = box.querySelector(".sel-pop");
+  pop.innerHTML = liste.map((x) => `${x.sep ? '<div class="sep"></div>' : ""}<button type="button" role="option" data-k="${x.k}" aria-selected="${x.k === cur}"><span class="sw ${x.sw}"></span>${x.nom}<span class="m">${x.meta}</span></button>`).join("");
+}
+for (const id of Object.keys(SELECTS)) {
+  const box = $(id), btn = box.querySelector(".sel-btn"), pop = box.querySelector(".sel-pop");
+  btn.addEventListener("click", () => {
+    const ouvrir = pop.classList.contains("hidden");
+    fermerMenus(ouvrir ? box : null);
+    pop.classList.toggle("hidden", !ouvrir); btn.setAttribute("aria-expanded", String(ouvrir));
+    if (ouvrir) (pop.querySelector('[aria-selected="true"]') ?? pop.querySelector("button"))?.focus();
+  });
+  pop.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-k]"); if (!b) return;
+    SELECTS[id].set(b.dataset.k); fermerMenus(null); btn.focus(); maj();
+  });
+  pop.addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    e.preventDefault();
+    const bs = [...pop.querySelectorAll("button")], i = bs.indexOf(document.activeElement);
+    bs[(i + (e.key === "ArrowDown" ? 1 : -1) + bs.length) % bs.length].focus();
+  });
+}
+document.addEventListener("click", (e) => { if (!e.target.closest(".sel")) fermerMenus(null); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") fermerMenus(null); });
 
 const CHAMPS = ["gCoef", "gLong", "dCoef", "dLong", "tMin", "tPose", "tMax", "jeu", "prevu"];
 for (const cle of CHAMPS) {
@@ -79,13 +119,6 @@ for (const cle of CHAMPS) {
     maj();
   });
 }
-$("gMat").addEventListener("change", () => { s.gMat = $("gMat").value; maj(); });
-$("dMat").addEventListener("change", () => { s.dMat = $("dMat").value; maj(); });
-$("amb").addEventListener("change", () => {
-  s.amb = $("amb").value;
-  if (AMBIANCES[s.amb]) { s.tMin = String(AMBIANCES[s.amb].tmin); s.tMax = String(AMBIANCES[s.amb].tmax); }
-  maj();
-});
 document.querySelectorAll(".modes button").forEach((b) => b.addEventListener("click", () => { s.mode = b.dataset.mode; maj(); }));
 
 // L'unite (mm, °C) est ecrite juste apres la valeur saisie : un texte invisible reprend la valeur pour pousser l'unite derriere elle
@@ -104,7 +137,9 @@ function majChamps() { for (const cle of CHAMPS) if ($(cle).value !== s[cle]) $(
 const NOMS_PT = { loin: "à l'autre bout", centre: "au centre", joint: "côté joint" };
 function point(pos, actif, nom, onClick) {
   const b = document.createElement("button");
-  b.type = "button"; b.className = "dot"; b.style.left = `${pos}%`;
+  b.type = "button"; b.className = "dot";
+  // les ronds des extremites sont rentres de 20 px : ils ne sont plus caches par la hachure ni coupes par le bord
+  b.style.left = pos === 0 ? "20px" : pos === 100 ? "calc(100% - 20px)" : `${pos}%`;
   b.setAttribute("aria-pressed", String(actif)); b.setAttribute("aria-label", nom); b.title = nom;
   b.innerHTML = "<span></span>"; b.addEventListener("click", onClick);
   return b;
@@ -116,7 +151,7 @@ function barre(classe, points) {
   return w;
 }
 function dessinerDeux(gapMm, paroi) {
-  const gapW = Math.max(16, Math.min(90, Math.round(gapMm * 6)));
+  const gapW = Math.max(16, Math.min(window.innerWidth < 520 ? 56 : 90, Math.round(gapMm * 6)));
   $("spacer").style.width = `${gapW}px`;
   const g = barre("g", [["loin", 0], ["centre", 50], ["joint", 100]].map(([k, pos]) => point(pos, s.gPt === k, `Élément de gauche : point fixe ${NOMS_PT[k]}`, () => { s.gPt = k; maj(); })));
   const gap = document.createElement("div"); gap.className = "gapbox"; gap.style.width = `${gapW}px`;
@@ -152,6 +187,42 @@ function etatsUne(e, r) {
   $("legende").textContent = "● point fixe · tirets = la pièce à la pose · écart exagéré pour qu'on le voie.";
 }
 
+
+// ---------- Schema du trou oblong (une seule piece) ----------
+function dessinerOblong(r) {
+  const W = 560, dir = s.uPt === "droite" ? -1 : 1; // dir = sens du bout qui bouge (cote exterieur)
+  const mx = (u) => (dir > 0 ? u : W - u);
+  const anc = (a) => (dir > 0 ? a : a === "start" ? "end" : a === "end" ? "start" : a);
+  const rect = (u1, u2, y, h, extra) => `<rect x="${Math.min(mx(u1), mx(u2))}" y="${y}" width="${Math.abs(u2 - u1)}" height="${h}" ${extra}/>`;
+  const txt = (u, y, t, cls, a = "middle") => `<text x="${mx(u)}" y="${y}" text-anchor="${anc(a)}" class="${cls}" font-size="${cls.includes("v") ? 15 : 12}">${t}</text>`;
+  // cote : trait fleche entre deux positions, avec deux reperes verticaux
+  const cote = (u1, u2, y, yBas, couleur) => {
+    const a = mx(u1), b = mx(u2), sg = Math.sign(b - a) || 1;
+    return `<path d="M${a} ${y}H${b}M${a} ${y}l${6 * sg} -4M${a} ${y}l${6 * sg} 4M${b} ${y}l${-6 * sg} -4M${b} ${y}l${-6 * sg} 4" fill="none" class="${couleur}" stroke="currentColor" stroke-width="1.6" style="color:inherit"/>`
+      + `<path d="M${a} ${y}V${yBas}M${b} ${y}V${yBas}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3" fill="none"/>`;
+  };
+  const X = r.chaudBout, Y = r.froidBout, D = 34;
+  const k = Math.min(14, 250 / Math.max(X + Y, 0.5));
+  const longueur = (X + Y) * k + D;
+  const u2 = 505, u1 = u2 - longueur, uc = u1 + D / 2 + X * k;
+  const sx = mx(uc);
+  $("oblong").innerHTML = `<svg viewBox="0 0 ${W} 225" role="img" aria-label="Trou oblong : ${fmt(X)} mm de place côté pièce (chaud), ${fmt(Y)} mm côté extérieur (froid), plus le diamètre de la vis">
+    ${rect(20, 520, 85, 72, 'rx="4" style="fill:var(--elem)"')}
+    ${rect(u1, u2, 103, 36, 'rx="18" style="fill:var(--surface);stroke:var(--ink)" stroke-width="1.6"')}
+    <circle cx="${sx}" cy="121" r="15" style="fill:var(--sunk);stroke:var(--ink)" stroke-width="2"/>
+    <path d="M${sx - 8} 121H${sx + 8}M${sx} 113V129" style="stroke:var(--ink)" stroke-width="2" stroke-linecap="round"/>
+    ${cote(uc, u1 + D / 2, 74, 103, "c1")}${cote(uc, u2 - D / 2, 74, 103, "c2")}
+    ${txt((uc + u1 + D / 2) / 2, 38, "en chaud", "m")}${txt((uc + u1 + D / 2) / 2, 58, `${fmt(X)} mm`, "v c1")}
+    ${txt((uc + u2 - D / 2) / 2, 38, "en froid", "m")}${txt((uc + u2 - D / 2) / 2, 58, `${fmt(Y)} mm`, "v c2")}
+    ${cote(u1, u2, 188, 139, "c0")}
+    ${txt((u1 + u2) / 2, 210, `trou : ${fmt(X + Y)} mm + Ø de la vis`, "m")}
+    ${txt(30, 172, dir > 0 ? "← centre de la pièce" : "centre de la pièce →", "m", "start")}
+    ${txt(512, 172, "bout de la pièce", "m", "end")}
+  </svg>`;
+  const quel = s.uPt === "centre" ? "à chaque extrémité (la pièce est fixée au centre)" : `à l'extrémité ${s.uPt === "gauche" ? "droite" : "gauche"} (la pièce est fixée ${POINTS_PIECE[s.uPt].nom})`;
+  $("oblongNote").textContent = `À prévoir ${quel}. Pour une fixation intermédiaire, la course est proportionnelle à sa distance au point fixe.`;
+}
+
 // ---------- Mise a jour ----------
 let dernier = null;
 function elementDe(cote) {
@@ -164,13 +235,13 @@ function majCoef(cote) {
   const mat = s[cote + "Mat"], txt = $(cote + "CoefTxt");
   $(cote + "Coef").closest(".unit").classList.toggle("hidden", mat !== "autre");
   txt.classList.toggle("hidden", mat === "autre" || mat === "paroi");
-  txt.textContent = mat === "autre" || mat === "paroi" ? "" : `Coefficient : ${MATERIAUX[mat].coef} µm/m·°C`;
+  txt.textContent = mat === "autre" || mat === "paroi" ? "" : `Coefficient α = ${MATERIAUX[mat].coef} × 10⁻⁶ K⁻¹`;
 }
 function maj() {
   sauver();
   const une = s.mode === "une";
   document.querySelectorAll(".modes button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.mode === s.mode)));
-  $("gMat").value = s.gMat; $("dMat").value = s.dMat; $("amb").value = AMBIANCES[s.amb] ? s.amb : "perso";
+  for (const id of Object.keys(SELECTS)) majSelect(id);
   majChamps();
   majUnites();
   // Ce qui change entre les deux calculs
@@ -186,6 +257,7 @@ function maj() {
   $("ambNote").textContent = { int: "Local chauffé ou tempéré.", ombre: "À l'abri du soleil direct.", soleil: "Élément sombre en plein soleil : jusqu'à environ 80 °C.", perso: "" }[s.amb] ?? "";
   const verdict = $("verdict");
   verdict.classList.add("hidden");
+  $("oblongCard").classList.add("hidden");
   const t = { tmin: nombre(s.tMin), tpose: nombre(s.tPose), tmax: nombre(s.tMax) };
 
   if (une) {
@@ -202,6 +274,7 @@ function maj() {
     $("rWarn").classList.toggle("hidden", !r.incoherent);
     if (r.incoherent) $("rWarn").textContent = "La température de pose devrait être comprise entre le mini et le maxi.";
     dessinerUne(); etatsUne(t, r);
+    $("oblongCard").classList.remove("hidden"); dessinerOblong(r);
     return;
   }
 
@@ -248,7 +321,7 @@ $("copyBtn").addEventListener("click", async () => {
     ta.remove();
   }
 });
-$("aboutBtn").addEventListener("click", () => toast("Joint v1.1 · conçu et développé par Hugo N."));
+$("aboutBtn").addEventListener("click", () => toast("Joint v1.2 · conçu et développé par Hugo N."));
 $("coefsBody").innerHTML = Object.values(MATERIAUX).filter((m) => m.coef).map((m) => `<tr><td>${m.nom}</td><td>${m.coef}</td></tr>`).join("");
 
 maj();

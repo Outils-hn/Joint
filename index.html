@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="styles.css?v=1.1">
+<link rel="stylesheet" href="styles.css?v=1.2">
 </head>
 <body>
 <header class="topbar">
@@ -62,17 +62,17 @@
     <div class="cols" id="cols">
       <div class="col" id="colG">
         <span class="lbl" id="lblG">Gauche</span>
-        <select id="gMat" aria-label="Matériau de l'élément de gauche"></select>
+        <div class="sel" id="gMat"><button type="button" class="sel-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Matériau de l'élément de gauche"><span class="sw"></span><span class="sel-t"></span><svg class="chev" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="sel-pop hidden" role="listbox" aria-label="Matériau de l'élément de gauche"></div></div>
         <div class="unit" data-u="mm"><input id="gLong" inputmode="decimal" autocomplete="off" aria-label="Longueur de l'élément de gauche"><span class="u" aria-hidden="true"></span></div>
-        <div class="unit coef-in hidden" data-u="µm/m·°C"><input id="gCoef" inputmode="decimal" autocomplete="off" aria-label="Coefficient de dilatation de l'élément de gauche"><span class="u" aria-hidden="true"></span></div>
+        <div class="unit coef-in hidden" data-u="× 10⁻⁶ K⁻¹"><input id="gCoef" inputmode="decimal" autocomplete="off" aria-label="Coefficient de dilatation de l'élément de gauche"><span class="u" aria-hidden="true"></span></div>
         <span class="coef" id="gCoefTxt"></span>
       </div>
       <div class="spacer" id="spacer" aria-hidden="true"></div>
       <div class="col" id="colD">
         <span class="lbl">Droite</span>
-        <select id="dMat" aria-label="Matériau de l'élément de droite"></select>
+        <div class="sel" id="dMat"><button type="button" class="sel-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Matériau de l'élément de droite"><span class="sw"></span><span class="sel-t"></span><svg class="chev" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="sel-pop hidden" role="listbox" aria-label="Matériau de l'élément de droite"></div></div>
         <div class="unit" data-u="mm" id="dLongBox"><input id="dLong" inputmode="decimal" autocomplete="off" aria-label="Longueur de l'élément de droite"><span class="u" aria-hidden="true"></span></div>
-        <div class="unit coef-in hidden" data-u="µm/m·°C"><input id="dCoef" inputmode="decimal" autocomplete="off" aria-label="Coefficient de dilatation de l'élément de droite"><span class="u" aria-hidden="true"></span></div>
+        <div class="unit coef-in hidden" data-u="× 10⁻⁶ K⁻¹"><input id="dCoef" inputmode="decimal" autocomplete="off" aria-label="Coefficient de dilatation de l'élément de droite"><span class="u" aria-hidden="true"></span></div>
         <span class="coef" id="dCoefTxt"></span>
       </div>
     </div>
@@ -84,7 +84,7 @@
   <section class="card" aria-labelledby="hTemp">
     <h2 id="hTemp">Températures</h2>
     <div class="temps">
-      <div class="f f-amb"><label class="lbl" for="amb">Situation</label><select id="amb" aria-label="Situation"></select></div>
+      <div class="f f-amb"><span class="lbl" id="ambLbl">Situation</span><div class="sel" id="amb"><button type="button" class="sel-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Situation"><span class="sw"></span><span class="sel-t"></span><svg class="chev" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="sel-pop hidden" role="listbox" aria-label="Situation"></div></div></div>
       <div class="f"><label class="lbl" for="tMin">Mini</label><div class="unit" data-u="°C"><input id="tMin" inputmode="decimal" autocomplete="off"><span class="u" aria-hidden="true"></span></div></div>
       <div class="f"><label class="lbl" for="tPose">Pose</label><div class="unit" data-u="°C"><input id="tPose" inputmode="decimal" autocomplete="off"><span class="u" aria-hidden="true"></span></div></div>
       <div class="f"><label class="lbl" for="tMax">Maxi</label><div class="unit" data-u="°C"><input id="tMax" inputmode="decimal" autocomplete="off"><span class="u" aria-hidden="true"></span></div></div>
@@ -99,6 +99,12 @@
     <p class="hint legende" id="legende"></p>
   </section>
 
+  <section class="card hidden" id="oblongCard" aria-labelledby="hObl">
+    <h2 id="hObl">Le trou oblong à prévoir</h2>
+    <div id="oblong"></div>
+    <p class="hint" id="oblongNote"></p>
+  </section>
+
   <div class="actions"><button type="button" class="btn" id="copyBtn">Copier le résumé</button></div>
 
   <details class="card explain">
@@ -106,14 +112,14 @@
     <div class="explain-body">
       <p>Une pièce de longueur <b>L</b> s'allonge de <b>coefficient × L × écart de température</b>. Exemple : un tube alu de 4 m passe de 20 °C à 80 °C : 23 × 4 × 60 = <b>5,5 mm</b>.</p>
       <p>Entre deux éléments, seule la part qui avance <b>vers le joint</b> compte : tout si le point fixe est à l'autre bout, la moitié s'il est au centre, rien s'il est côté joint. L'espace à la pose = ce qui avance en chaud + l'espace minimal voulu en chaud. En froid, les éléments se raccourcissent et l'espace s'ouvre d'autant.</p>
-      <table class="coefs"><thead><tr><th>Matériau</th><th>Coefficient (µm/m·°C)</th></tr></thead><tbody id="coefsBody"></tbody></table>
+      <table class="coefs"><thead><tr><th>Matériau</th><th>Coefficient α (× 10⁻⁶ K⁻¹, soit par °C)</th></tr></thead><tbody id="coefsBody"></tbody></table>
       <p class="hint">Valeurs courantes, indicatives. Les températures « au soleil » supposent un élément sombre exposé ; à confirmer avec les règles du bureau et la fiche du fabricant.</p>
     </div>
   </details>
 </main>
 
-<footer>Joint v1.1 · <button type="button" id="aboutBtn">Conçu par Hugo N.</button> · 2026 · <a href="https://outils-hn.github.io/?app=Joint&amp;v=1.1&amp;page=%2FJoint%2F" target="_blank" rel="noopener noreferrer">Suggestion / bug</a></footer>
+<footer>Joint v1.2 · <button type="button" id="aboutBtn">Conçu par Hugo N.</button> · 2026 · <a href="https://outils-hn.github.io/?app=Joint&amp;v=1.2&amp;page=%2FJoint%2F" target="_blank" rel="noopener noreferrer">Suggestion / bug</a></footer>
 <div class="toast" id="toast" role="status"></div>
-<script type="module" src="js/app.js?v=1.1"></script>
+<script type="module" src="js/app.js?v=1.2"></script>
 </body>
 </html>

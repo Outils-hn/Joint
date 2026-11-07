@@ -23,6 +23,7 @@ async function ouvrir({ largeur = 1440, hauteur = 900, sombre = false } = {}) {
 const big = (page) => page.locator("#rBig").innerText().then((t) => t.replace(/\s+/g, " ").trim());
 const pasDebordement = (page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
 
+const choisir = async (page, id, k) => { await page.click(`#${id} .sel-btn`); await page.click(`#${id} .sel-pop [data-k="${k}"]`); };
 const dot = (page, cote, k) => page.locator(`#draw .barwrap.${cote} .dot[aria-label$="${k}"]`).click();
 
 await step("Exemple de depart : 2 tubes alu de 4 m = 13,0 mm", async () => {
@@ -30,7 +31,7 @@ await step("Exemple de depart : 2 tubes alu de 4 m = 13,0 mm", async () => {
   verif("Resultat de depart 13,0 mm", (await big(page)) === "13,0 mm", await big(page));
   verif("Le resultat est visible sans defiler (ordinateur)", await page.locator("#rBig").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
   verif("Trois etats affiches", (await page.locator("#etats .etat").count()) === 3);
-  verif("Coefficient affiche en petit", /23 µm\/m·°C/.test(await page.locator("#gCoefTxt").innerText()));
+  verif("Coefficient affiche en petit", /23 × 10⁻⁶ K⁻¹/.test(await page.locator("#gCoefTxt").innerText()));
   await page.screenshot({ path: `${OUT}/01-depart.png`, fullPage: true });
 
   // Point fixe au centre des deux elements (on touche le rond du dessin) -> 7,5 mm
@@ -38,7 +39,7 @@ await step("Exemple de depart : 2 tubes alu de 4 m = 13,0 mm", async () => {
   verif("Points fixes au centre : 7,5 mm", (await big(page)) === "7,5 mm", await big(page));
 
   // Paroi fixe a droite : un seul element bouge
-  await page.selectOption("#dMat", "paroi");
+  await choisir(page, "dMat", "paroi");
   verif("Paroi fixe : 2,8 + 2 = 4,8 mm", (await big(page)) === "4,8 mm", await big(page));
   verif("Longueur de l'element de droite masquee", !(await page.locator("#dLong").isVisible()));
   await page.screenshot({ path: `${OUT}/02-paroi.png`, fullPage: true });
@@ -78,6 +79,9 @@ await step("Une seule piece", async () => {
   verif("Trous oblongs : course de 13,8 mm", /13,8 mm à l'extrémité libre/.test(await page.locator("#rWhy").innerText()), await page.locator("#rWhy").innerText());
   verif("Le deuxieme element disparait", !(await page.locator("#colD").isVisible()));
   verif("Champ « J'avais prevu » masque", !(await page.locator("#prevu").isVisible()));
+  verif("Schema du trou oblong affiche", await page.locator("#oblong svg").isVisible());
+  const obl = (await page.locator("#oblong").innerText()).replace(/\s+/g, " ");
+  verif("Trou oblong : 8,3 mm en chaud / 5,5 mm en froid", /en chaud 8,3 mm/.test(obl) && /en froid 5,5 mm/.test(obl), obl);
   await page.screenshot({ path: `${OUT}/06-piece.png`, fullPage: true });
   await page.locator("#draw .dot[aria-label$='au centre']").click();
   verif("Point fixe au centre : course de 6,9 mm de chaque cote", /6,9 mm de chaque côté/.test(await page.locator("#rWhy").innerText()), await page.locator("#rWhy").innerText());
@@ -88,12 +92,12 @@ await step("Une seule piece", async () => {
 
 await step("Situation, materiaux, coefficient libre et memoire des reglages", async () => {
   const { c, page } = await ouvrir();
-  await page.selectOption("#amb", "int");
+  await choisir(page, "amb", "int");
   verif("Interieur : mini 0, maxi 40", (await page.inputValue("#tMin")) === "0" && (await page.inputValue("#tMax")) === "40");
   verif("Interieur : 5,7 mm", (await big(page)) === "5,7 mm", await big(page));
   await page.fill("#tMax", "80");
-  verif("Mini 0 / maxi 80 : situation personnalisee", (await page.inputValue("#amb")) === "perso");
-  await page.selectOption("#gMat", "autre");
+  verif("Mini 0 / maxi 80 : situation personnalisee", /Personnalisé/.test(await page.locator("#amb .sel-t").innerText()));
+  await choisir(page, "gMat", "autre");
   verif("Coefficient libre visible", await page.locator("#gCoef").isVisible());
   await page.fill("#gCoef", "10"); await page.fill("#gLong", "3000");
   await page.waitForTimeout(100);
@@ -123,6 +127,22 @@ await step("Telephone et theme sombre", async () => {
   await sombre.page.screenshot({ path: `${OUT}/05-sombre.png`, fullPage: true });
   verif("Theme sombre applique", (await sombre.page.evaluate(() => document.documentElement.dataset.theme)) === "dark");
   await sombre.c.close();
+});
+
+await step("Menus de choix et pied de page", async () => {
+  const { c, page } = await ouvrir();
+  await page.click("#gMat .sel-btn");
+  verif("Menu matiere : 5 choix a gauche", (await page.locator("#gMat .sel-pop button").count()) === 5);
+  verif("Menu matiere : 6 choix a droite (avec paroi fixe)", (await page.locator("#dMat .sel-pop button").count()) === 6);
+  await page.screenshot({ path: `${OUT}/08-menu.png` });
+  await page.keyboard.press("Escape");
+  verif("Echap ferme le menu", await page.locator("#gMat .sel-pop").evaluate((el) => el.classList.contains("hidden")));
+  // Les ronds des points fixes ne sont pas caches par la hachure : on clique vraiment dessus
+  await page.locator("#draw .barwrap.g .dot[aria-label$='côté joint']").click({ timeout: 3000 });
+  verif("Le rond cote joint est cliquable (pas recouvert)", (await page.locator("#draw .barwrap.g .dot[aria-label$='côté joint']").getAttribute("aria-pressed")) === "true");
+  const pied = await page.locator("footer").evaluate((el) => { const r = el.getBoundingClientRect(); return { centre: r.left + r.width / 2, page: document.documentElement.clientWidth / 2, align: getComputedStyle(el).textAlign }; });
+  verif("Pied de page centre", pied.align === "center" && Math.abs(pied.centre - pied.page) < 2, JSON.stringify(pied));
+  await c.close();
 });
 
 await step("Menu des applis", async () => {

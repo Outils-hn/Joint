@@ -2,7 +2,7 @@
 // Principe : un element de longueur L change de longueur de coef × L × ecart de temperature.
 // Seule la part qui avance VERS le joint compte : tout si le point fixe est a l'autre bout, la moitie s'il est au centre, rien s'il est cote joint.
 
-/** Coefficients de dilatation usuels, en µm par metre et par °C (valeurs courantes, a confirmer avec les regles du bureau). */
+/** Coefficients de dilatation usuels, en 10^-6 par kelvin (= µm par metre et par °C). Valeurs courantes, a confirmer avec les regles du bureau. */
 export const MATERIAUX = {
   alu: { nom: "Alu", coef: 23 },
   acier: { nom: "Acier", coef: 12 },
@@ -105,6 +105,10 @@ export function piece({ e, tmin, tpose, tmax }) {
     chaudG: p.partG * allongement, chaudD: p.partD * allongement,
     froidG: -p.partG * raccourcissement, froidD: -p.partD * raccourcissement,
     courseBout: Math.max(p.partG, p.partD) * course,
+    // Au bout qui bouge le plus : de combien la piece avance en chaud (le trou doit laisser cette place cote piece)
+    // et de combien elle recule en froid (place a laisser cote exterieur).
+    chaudBout: Math.max(p.partG, p.partD) * allongement,
+    froidBout: Math.max(p.partG, p.partD) * raccourcissement,
     incoherent: !(tmin <= tpose && tpose <= tmax),
   };
 }
