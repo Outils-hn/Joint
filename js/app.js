@@ -190,7 +190,7 @@ function etatsUne(e, r) {
 
 // ---------- Schema du trou oblong (une seule piece) ----------
 // Schema de principe : les deux cotes ont une largeur mini pour que les textes ne se chevauchent jamais, quelles que soient les valeurs.
-function dessinerOblong(r) {
+function dessinerOblong(r, t) {
   const W = 560, H = 238, dir = s.uPt === "droite" ? -1 : 1; // dir = sens du bout qui bouge (cote exterieur)
   const mx = (u) => (dir > 0 ? u : W - u);
   const anc = (a) => (dir > 0 ? a : a === "start" ? "end" : a === "end" ? "start" : a);
@@ -210,8 +210,10 @@ function dessinerOblong(r) {
   $("oblong").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Trou oblong : ${fmt(X)} mm de place côté pièce (en chaud), ${fmt(Y)} mm côté extérieur (en froid), plus le diamètre de la vis">
     ${rect(20, 530, 90, 70, 'rx="4" style="fill:var(--elem)"')}
     ${rect(u1, u2, yc - 18, 36, 'rx="18" style="fill:var(--surface);stroke:var(--ink)" stroke-width="1.8"')}
-    <circle cx="${sx}" cy="${yc}" r="15" style="fill:var(--sunk);stroke:var(--ink)" stroke-width="2"/>
-    <path d="M${sx - 8} ${yc}H${sx + 8}M${sx} ${yc - 8}V${yc + 8}" style="stroke:var(--ink)" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="${sx}" cy="${yc}" r="15" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>
+    ${txt(uc, 166, "position à la pose", "m")}
+    <g id="vis" style="transform:translateX(0px)"><circle cx="${sx}" cy="${yc}" r="15" style="fill:var(--sunk);stroke:var(--ink)" stroke-width="2"/>
+    <path d="M${sx - 8} ${yc}H${sx + 8}M${sx} ${yc - 8}V${yc + 8}" style="stroke:var(--ink)" stroke-width="2" stroke-linecap="round"/></g>
     ${cote(uc, u1 + D / 2, 74, yc - 18, "c1")}${cote(uc, u2 - D / 2, 74, yc - 18, "c2")}
     ${txt(uc - wX / 2, 34, "en chaud", "m")}${txt(uc - wX / 2, 58, `${fmt(X)} mm`, "v c1")}
     ${txt(uc + wY / 2, 34, "en froid", "m")}${txt(uc + wY / 2, 58, `${fmt(Y)} mm`, "v c2")}
@@ -221,8 +223,34 @@ function dessinerOblong(r) {
     ${txt(20, 232, dir > 0 ? "← centre de la pièce" : "centre de la pièce →", "m", "start")}
     ${txt(530, 232, "bout de la pièce", "m", "end")}
   </svg>`;
+  const sens = mx(1) - mx(0); // +1 normal, -1 miroir
+  const posVis = (T) => { // decalage de la vis (en unites du dessin) selon la temperature
+    if (T > t.tpose && t.tmax > t.tpose) return -wX * Math.min(1, (T - t.tpose) / (t.tmax - t.tpose));
+    if (T < t.tpose && t.tpose > t.tmin) return wY * Math.min(1, (t.tpose - T) / (t.tpose - t.tmin));
+    return 0;
+  };
+  const curseur = $("oblT");
+  curseur.min = t.tmin; curseur.max = t.tmax; curseur.step = 1;
+  const placer = () => {
+    const T = Math.min(t.tmax, Math.max(t.tmin, Number(curseur.value)));
+    $("vis").style.transform = `translateX(${posVis(T) * sens}px)`;
+    $("oblTval").textContent = degre(T);
+    const chaud = T > t.tpose, froid = T < t.tpose, d = (chaud ? X : Y) * Math.abs(posVis(T)) / (chaud ? wX : wY);
+    const fond = Math.abs(posVis(T)) >= (chaud ? wX : wY) - 0.01;
+    $("oblEtat").innerHTML = !chaud && !froid
+      ? `<b>À ${degre(T)} (pose)</b> : la vis est posée ici. Elle n'est pas au milieu du trou, et c'est voulu.`
+      : chaud
+        ? `<b>À ${degre(T)}</b> : la pièce s'allonge de ${fmt(d)} mm, donc la vis glisse de ${fmt(d)} mm vers le centre de la pièce${fond ? ` et arrive au fond : il faut <b>${fmt(X)} mm</b> de ce côté.` : "."}`
+        : `<b>À ${degre(T)}</b> : la pièce se raccourcit de ${fmt(d)} mm, donc la vis glisse de ${fmt(d)} mm vers le bout de la pièce${fond ? ` et arrive au fond : il faut <b>${fmt(Y)} mm</b> de ce côté.` : "."}`;
+    document.querySelectorAll("#oblBtns button").forEach((b) => b.classList.toggle("on", Number(b.dataset.t) === T));
+  };
+  const reglages = { froid: t.tmin, pose: t.tpose, chaud: t.tmax };
+  document.querySelectorAll("#oblBtns button").forEach((b) => { b.dataset.t = reglages[b.dataset.k]; b.onclick = () => { curseur.value = reglages[b.dataset.k]; placer(); }; });
+  curseur.value = t.tpose; curseur.oninput = placer;
   const quel = s.uPt === "centre" ? "à chaque extrémité (la pièce est fixée au centre)" : `à l'extrémité ${s.uPt === "gauche" ? "droite" : "gauche"} (la pièce est fixée ${POINTS_PIECE[s.uPt].nom})`;
-  $("oblongNote").textContent = `Schéma de principe, pas à l'échelle. À prévoir ${quel}. Pour une fixation intermédiaire, la course est proportionnelle à sa distance au point fixe.`;
+  placer();
+  const pourquoi = Math.abs(X - Y) > 0.05 ? `La vis n'est pas au milieu : la pièce s'allonge de ${fmt(X)} mm en chaud mais se raccourcit de ${fmt(Y)} mm en froid, donc le trou est plus long du côté où elle bouge le plus. ` : "";
+  $("oblongNote").textContent = `${pourquoi}Schéma de principe, pas à l'échelle. À prévoir ${quel}. Pour une fixation intermédiaire, la course est proportionnelle à sa distance au point fixe.`;
 }
 
 // ---------- Mise a jour ----------
@@ -276,7 +304,7 @@ function maj() {
     $("rWarn").classList.toggle("hidden", !r.incoherent);
     if (r.incoherent) $("rWarn").textContent = "La température de pose devrait être comprise entre le mini et le maxi.";
     dessinerUne(); etatsUne(t, r);
-    $("oblongCard").classList.remove("hidden"); dessinerOblong(r);
+    $("oblongCard").classList.remove("hidden"); dessinerOblong(r, t);
     return;
   }
 
@@ -323,7 +351,7 @@ $("copyBtn").addEventListener("click", async () => {
     ta.remove();
   }
 });
-$("aboutBtn").addEventListener("click", () => toast("Joint v1.3 · conçu et développé par Hugo N."));
+$("aboutBtn").addEventListener("click", () => toast("Joint v1.4 · conçu et développé par Hugo N."));
 $("coefsBody").innerHTML = Object.values(MATERIAUX).filter((m) => m.coef).map((m) => `<tr><td>${m.nom}</td><td>${m.coef}</td></tr>`).join("");
 
 maj();

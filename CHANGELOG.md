@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 1.4 — 7 novembre 2026
+
+- Nouveauté : le schéma du trou oblong devient interactif : tu fais glisser la température (ou touches Froid / Pose / Chaud) et tu vois la vis se déplacer dans le trou, avec une phrase qui explique pourquoi le trou est plus long d'un côté que de l'autre.
+
 ## 1.3 — 7 novembre 2026
 
 - Nouveauté : le schéma du trou oblong est enfin lisible : les textes ne se superposent plus, même pour de petites pièces, et ils sont plus grands, y compris sur téléphone.
