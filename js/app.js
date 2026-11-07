@@ -189,38 +189,40 @@ function etatsUne(e, r) {
 
 
 // ---------- Schema du trou oblong (une seule piece) ----------
+// Schema de principe : les deux cotes ont une largeur mini pour que les textes ne se chevauchent jamais, quelles que soient les valeurs.
 function dessinerOblong(r) {
-  const W = 560, dir = s.uPt === "droite" ? -1 : 1; // dir = sens du bout qui bouge (cote exterieur)
+  const W = 560, H = 238, dir = s.uPt === "droite" ? -1 : 1; // dir = sens du bout qui bouge (cote exterieur)
   const mx = (u) => (dir > 0 ? u : W - u);
   const anc = (a) => (dir > 0 ? a : a === "start" ? "end" : a === "end" ? "start" : a);
   const rect = (u1, u2, y, h, extra) => `<rect x="${Math.min(mx(u1), mx(u2))}" y="${y}" width="${Math.abs(u2 - u1)}" height="${h}" ${extra}/>`;
-  const txt = (u, y, t, cls, a = "middle") => `<text x="${mx(u)}" y="${y}" text-anchor="${anc(a)}" class="${cls}" font-size="${cls.includes("v") ? 15 : 12}">${t}</text>`;
-  // cote : trait fleche entre deux positions, avec deux reperes verticaux
+  const txt = (u, y, t, cls, a = "middle") => `<text x="${mx(u)}" y="${y}" text-anchor="${anc(a)}" class="${cls}">${t}</text>`;
+  // cote : trait avec fleches aux deux bouts, et reperes pointilles jusqu'a yBas
   const cote = (u1, u2, y, yBas, couleur) => {
     const a = mx(u1), b = mx(u2), sg = Math.sign(b - a) || 1;
-    return `<path d="M${a} ${y}H${b}M${a} ${y}l${6 * sg} -4M${a} ${y}l${6 * sg} 4M${b} ${y}l${-6 * sg} -4M${b} ${y}l${-6 * sg} 4" fill="none" class="${couleur}" stroke="currentColor" stroke-width="1.6" style="color:inherit"/>`
+    return `<path d="M${a} ${y}H${b}M${a} ${y}l${7 * sg} -4.5M${a} ${y}l${7 * sg} 4.5M${b} ${y}l${-7 * sg} -4.5M${b} ${y}l${-7 * sg} 4.5" fill="none" class="${couleur}" stroke="currentColor" stroke-width="1.8"/>`
       + `<path d="M${a} ${y}V${yBas}M${b} ${y}V${yBas}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3" fill="none"/>`;
   };
-  const X = r.chaudBout, Y = r.froidBout, D = 34;
-  const k = Math.min(14, 250 / Math.max(X + Y, 0.5));
-  const longueur = (X + Y) * k + D;
-  const u2 = 505, u1 = u2 - longueur, uc = u1 + D / 2 + X * k;
-  const sx = mx(uc);
-  $("oblong").innerHTML = `<svg viewBox="0 0 ${W} 225" role="img" aria-label="Trou oblong : ${fmt(X)} mm de place côté pièce (chaud), ${fmt(Y)} mm côté extérieur (froid), plus le diamètre de la vis">
-    ${rect(20, 520, 85, 72, 'rx="4" style="fill:var(--elem)"')}
-    ${rect(u1, u2, 103, 36, 'rx="18" style="fill:var(--surface);stroke:var(--ink)" stroke-width="1.6"')}
-    <circle cx="${sx}" cy="121" r="15" style="fill:var(--sunk);stroke:var(--ink)" stroke-width="2"/>
-    <path d="M${sx - 8} 121H${sx + 8}M${sx} 113V129" style="stroke:var(--ink)" stroke-width="2" stroke-linecap="round"/>
-    ${cote(uc, u1 + D / 2, 74, 103, "c1")}${cote(uc, u2 - D / 2, 74, 103, "c2")}
-    ${txt((uc + u1 + D / 2) / 2, 38, "en chaud", "m")}${txt((uc + u1 + D / 2) / 2, 58, `${fmt(X)} mm`, "v c1")}
-    ${txt((uc + u2 - D / 2) / 2, 38, "en froid", "m")}${txt((uc + u2 - D / 2) / 2, 58, `${fmt(Y)} mm`, "v c2")}
-    ${cote(u1, u2, 188, 139, "c0")}
-    ${txt((u1 + u2) / 2, 210, `trou : ${fmt(X + Y)} mm + Ø de la vis`, "m")}
-    ${txt(30, 172, dir > 0 ? "← centre de la pièce" : "centre de la pièce →", "m", "start")}
-    ${txt(512, 172, "bout de la pièce", "m", "end")}
+  const X = r.chaudBout, Y = r.froidBout, D = 36, TOTAL = 320, MINI = 110;
+  const part = X + Y > 0.005 ? X / (X + Y) : 0.5;
+  const wX = Math.min(TOTAL - MINI, Math.max(MINI, TOTAL * part)), wY = TOTAL - wX;
+  const u2 = 492, u1 = u2 - (D + TOTAL), uc = u1 + D / 2 + wX;
+  const sx = mx(uc), yc = 125;
+  $("oblong").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Trou oblong : ${fmt(X)} mm de place côté pièce (en chaud), ${fmt(Y)} mm côté extérieur (en froid), plus le diamètre de la vis">
+    ${rect(20, 530, 90, 70, 'rx="4" style="fill:var(--elem)"')}
+    ${rect(u1, u2, yc - 18, 36, 'rx="18" style="fill:var(--surface);stroke:var(--ink)" stroke-width="1.8"')}
+    <circle cx="${sx}" cy="${yc}" r="15" style="fill:var(--sunk);stroke:var(--ink)" stroke-width="2"/>
+    <path d="M${sx - 8} ${yc}H${sx + 8}M${sx} ${yc - 8}V${yc + 8}" style="stroke:var(--ink)" stroke-width="2" stroke-linecap="round"/>
+    ${cote(uc, u1 + D / 2, 74, yc - 18, "c1")}${cote(uc, u2 - D / 2, 74, yc - 18, "c2")}
+    ${txt(uc - wX / 2, 34, "en chaud", "m")}${txt(uc - wX / 2, 58, `${fmt(X)} mm`, "v c1")}
+    ${txt(uc + wY / 2, 34, "en froid", "m")}${txt(uc + wY / 2, 58, `${fmt(Y)} mm`, "v c2")}
+    ${cote(u1, u2, 188, yc + 18, "c0")}
+    ${txt((u1 + u2) / 2, 212, `trou : ${fmt(X + Y)} mm + Ø de la vis`, "m")}
+    <path d="M${mx(530)} 160V222" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3" fill="none"/>
+    ${txt(20, 232, dir > 0 ? "← centre de la pièce" : "centre de la pièce →", "m", "start")}
+    ${txt(530, 232, "bout de la pièce", "m", "end")}
   </svg>`;
   const quel = s.uPt === "centre" ? "à chaque extrémité (la pièce est fixée au centre)" : `à l'extrémité ${s.uPt === "gauche" ? "droite" : "gauche"} (la pièce est fixée ${POINTS_PIECE[s.uPt].nom})`;
-  $("oblongNote").textContent = `À prévoir ${quel}. Pour une fixation intermédiaire, la course est proportionnelle à sa distance au point fixe.`;
+  $("oblongNote").textContent = `Schéma de principe, pas à l'échelle. À prévoir ${quel}. Pour une fixation intermédiaire, la course est proportionnelle à sa distance au point fixe.`;
 }
 
 // ---------- Mise a jour ----------
@@ -321,7 +323,7 @@ $("copyBtn").addEventListener("click", async () => {
     ta.remove();
   }
 });
-$("aboutBtn").addEventListener("click", () => toast("Joint v1.2 · conçu et développé par Hugo N."));
+$("aboutBtn").addEventListener("click", () => toast("Joint v1.3 · conçu et développé par Hugo N."));
 $("coefsBody").innerHTML = Object.values(MATERIAUX).filter((m) => m.coef).map((m) => `<tr><td>${m.nom}</td><td>${m.coef}</td></tr>`).join("");
 
 maj();
