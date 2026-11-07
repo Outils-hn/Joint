@@ -67,6 +67,7 @@ test("piece seule de 6 m en alu, point fixe a gauche : +8,28 / -5,52 mm", () => 
   const r = piece({ e: { coef: 23, longueur: 6000, point: "gauche" }, tmin: -20, tpose: 20, tmax: 80 });
   proche(r.allongement, 8.28); proche(r.raccourcissement, 5.52); proche(r.course, 13.8);
   proche(r.chaudD, 8.28); proche(r.chaudG, 0); proche(r.froidD, -5.52); proche(r.courseBout, 13.8);
+  proche(r.chaudBout, 8.28); proche(r.froidBout, 5.52);
 });
 
 test("piece seule, point fixe au centre : la moitie a chaque bout", () => {

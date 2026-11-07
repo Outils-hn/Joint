@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 1.2 — 7 novembre 2026
+
+- Nouveauté : Joint affiche le coefficient de dilatation en « × 10⁻⁶ K⁻¹ », propose de beaux menus pour le matériau et la situation, et dessine le trou oblong à prévoir avec sa vis (place côté chaud, place côté froid) pour une pièce seule. Les ronds des points fixes ne sont plus cachés par la hachure et le pied de page est centré.
+
 ## 1.1 — 7 novembre 2026
 
 - Nouveauté : Joint est repensé : le résultat est tout en haut, on règle les points fixes en touchant le dessin, l'unité (mm, °C) se place juste après la valeur, le coefficient de dilatation est affiché, et un deuxième calcul donne la dilatation d'une seule pièce (par exemple 6 m d'alu) avec la course à prévoir dans les trous oblongs.
