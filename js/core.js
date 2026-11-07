@@ -81,3 +81,40 @@ export function resume({ g, d, tmin, tpose, tmax, jeu }, r, noms) {
     `En froid (${fmt(tmin, 0)} °C) : ${fmt(r.espaceFroid)} mm · en chaud (${fmt(tmax, 0)} °C) : ${fmt(r.espaceChaud)} mm`,
   ].join("\n");
 }
+
+/** Point fixe d'une piece seule : a gauche, au centre ou a droite. Part de la dilatation qui sort a chaque bout. */
+export const POINTS_PIECE = {
+  gauche: { nom: "à gauche", partG: 0, partD: 1 },
+  centre: { nom: "au centre", partG: 0.5, partD: 0.5 },
+  droite: { nom: "à droite", partG: 1, partD: 0 },
+};
+
+/**
+ * Une seule piece : de combien elle s'allonge (pose -> maxi) et se raccourcit (pose -> mini).
+ * Renvoie aussi le deplacement de chaque bout (positif = vers l'exterieur) et la course a prevoir dans les trous oblongs :
+ * le bout qui bouge le plus se deplace de (part x course totale) entre le mini et le maxi.
+ */
+export function piece({ e, tmin, tpose, tmax }) {
+  if (![tmin, tpose, tmax].every(Number.isFinite) || !(e.coef >= 0) || !(e.longueur > 0) || !POINTS_PIECE[e.point]) return null;
+  const p = POINTS_PIECE[e.point];
+  const allongement = variation(e.coef, e.longueur, Math.max(0, tmax - tpose));
+  const raccourcissement = variation(e.coef, e.longueur, Math.max(0, tpose - tmin));
+  const course = allongement + raccourcissement;
+  return {
+    allongement, raccourcissement, course,
+    chaudG: p.partG * allongement, chaudD: p.partD * allongement,
+    froidG: -p.partG * raccourcissement, froidD: -p.partD * raccourcissement,
+    courseBout: Math.max(p.partG, p.partD) * course,
+    incoherent: !(tmin <= tpose && tpose <= tmax),
+  };
+}
+
+/** Texte a coller dans une note ou un mail (piece seule). */
+export function resumePiece({ e, tmin, tpose, tmax }, r, nom) {
+  return [
+    `Dilatation d'une pièce : ${nom} ${fmt(e.longueur, 0)} mm, point fixe ${POINTS_PIECE[e.point].nom}`,
+    `Températures : ${fmt(tmin, 0)} °C à ${fmt(tmax, 0)} °C, pose à ${fmt(tpose, 0)} °C`,
+    `Allongement en chaud : +${fmt(r.allongement)} mm · raccourcissement en froid : −${fmt(r.raccourcissement)} mm (course totale ${fmt(r.course)} mm)`,
+    `Trous oblongs : course de ${fmt(r.courseBout)} mm à l'extrémité qui bouge le plus (+ diamètre de la vis)`,
+  ].join("\n");
+}

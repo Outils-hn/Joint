@@ -60,3 +60,23 @@ test("nombre et fmt", () => {
   assert.ok(Number.isNaN(nombre(""))); assert.ok(Number.isNaN(nombre("abc")));
   assert.equal(fmt(13.04), "13,0"); assert.equal(fmt(-0.02), "0,0"); assert.equal(fmt(7.5, 0), "8");
 });
+
+import { piece, POINTS_PIECE } from "../js/core.js";
+
+test("piece seule de 6 m en alu, point fixe a gauche : +8,28 / -5,52 mm", () => {
+  const r = piece({ e: { coef: 23, longueur: 6000, point: "gauche" }, tmin: -20, tpose: 20, tmax: 80 });
+  proche(r.allongement, 8.28); proche(r.raccourcissement, 5.52); proche(r.course, 13.8);
+  proche(r.chaudD, 8.28); proche(r.chaudG, 0); proche(r.froidD, -5.52); proche(r.courseBout, 13.8);
+});
+
+test("piece seule, point fixe au centre : la moitie a chaque bout", () => {
+  const r = piece({ e: { coef: 23, longueur: 6000, point: "centre" }, tmin: -20, tpose: 20, tmax: 80 });
+  proche(r.chaudG, 4.14); proche(r.chaudD, 4.14); proche(r.courseBout, 6.9);
+});
+
+test("piece seule : donnees manquantes ou incoherentes", () => {
+  assert.equal(piece({ e: { coef: 23, longueur: NaN, point: "gauche" }, tmin: -20, tpose: 20, tmax: 80 }), null);
+  const r = piece({ e: { coef: 23, longueur: 1000, point: "droite" }, tmin: -20, tpose: 90, tmax: 80 });
+  assert.equal(r.incoherent, true); proche(r.allongement, 0);
+  assert.ok(POINTS_PIECE.droite);
+});

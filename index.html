@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="styles.css?v=1.0">
+<link rel="stylesheet" href="styles.css?v=1.1">
 </head>
 <body>
 <header class="topbar">
@@ -32,90 +32,88 @@
         <div class="apps-menu" id="appsList"></div>
       </details>
     </div>
-    <span class="tagline">Quel espace laisser entre deux éléments ?</span>
+    <span class="tagline">Dilatation : quel espace laisser, de combien ça bouge</span>
     <button class="pill" id="themeBtn" title="Changer de thème"></button>
   </div>
 </header>
 
 <main>
-  <div class="col-saisie">
-    <section class="card" aria-labelledby="hElem">
-      <h2 id="hElem">Les deux éléments</h2>
-      <p class="hint">Chacun est tenu par <b>un point fixe</b> ; ses autres fixations sont en trous oblongs, il peut donc glisser.</p>
-      <div class="elems">
-        <div class="elem" id="elemG">
-          <h3>Élément de gauche</h3>
-          <div class="field"><span class="lbl">Matériau</span><div class="chips" data-chips="g-mat"></div></div>
-          <div class="field coef-row hidden" data-for="g-coef"><label for="gCoef">Coefficient (µm/m·°C)</label><input id="gCoef" inputmode="decimal" autocomplete="off"></div>
-          <div class="field"><label for="gLong">Longueur (mm)</label><input id="gLong" inputmode="decimal" autocomplete="off"></div>
-          <div class="field"><span class="lbl">Point fixe</span><div class="chips" data-chips="g-pt"></div></div>
-        </div>
-        <div class="elem" id="elemD">
-          <h3>Élément de droite</h3>
-          <div class="field"><span class="lbl">Matériau</span><div class="chips" data-chips="d-mat"></div></div>
-          <div class="field coef-row hidden" data-for="d-coef"><label for="dCoef">Coefficient (µm/m·°C)</label><input id="dCoef" inputmode="decimal" autocomplete="off"></div>
-          <div class="elem-detail">
-            <div class="field"><label for="dLong">Longueur (mm)</label><input id="dLong" inputmode="decimal" autocomplete="off"></div>
-            <div class="field"><span class="lbl">Point fixe</span><div class="chips" data-chips="d-pt"></div></div>
-          </div>
-          <p class="hint paroi-note hidden">Une paroi fixe (béton, maçonnerie) ne bouge pas : seul l'élément de gauche se dilate.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="card" aria-labelledby="hTemp">
-      <h2 id="hTemp">Températures</h2>
-      <div class="field"><span class="lbl">Situation</span><div class="chips" data-chips="amb"></div></div>
-      <div class="temps">
-        <div class="field"><label for="tMin">Mini (°C)</label><input id="tMin" inputmode="decimal" autocomplete="off"></div>
-        <div class="field"><label for="tPose">À la pose (°C)</label><input id="tPose" inputmode="decimal" autocomplete="off"></div>
-        <div class="field"><label for="tMax">Maxi (°C)</label><input id="tMax" inputmode="decimal" autocomplete="off"></div>
-      </div>
-      <p class="hint" id="ambNote"></p>
-      <div class="field"><label for="jeu">Espace à garder en chaud (mm)</label><input id="jeu" inputmode="decimal" autocomplete="off"></div>
-      <p class="hint">Pour que les deux éléments ne se touchent jamais, même au plus chaud.</p>
-    </section>
+  <div class="modes" role="tablist" aria-label="Que veux-tu calculer ?">
+    <button type="button" role="tab" id="modeDeux" data-mode="deux">Espace entre deux éléments</button>
+    <button type="button" role="tab" id="modeUne" data-mode="une">Dilatation d'une pièce</button>
   </div>
 
-  <div class="col-result">
-    <section class="card result" aria-live="polite">
-      <div class="result-top">
-        <span class="kicker" id="rKicker">Espace à laisser à la pose</span>
-        <div class="big" id="rBig">—</div>
-        <p class="why" id="rWhy"></p>
-        <p class="warn hidden" id="rWarn"></p>
-      </div>
-      <div class="verif">
-        <label for="prevu">J'avais prévu (mm)</label>
-        <input id="prevu" inputmode="decimal" autocomplete="off" placeholder="ex. 10">
-        <div class="verdict hidden" id="verdict"></div>
-      </div>
-    </section>
-
-    <section class="card" aria-labelledby="hSchema">
-      <h2 id="hSchema">Selon la température</h2>
-      <div id="schema"></div>
-      <p class="hint legende"><span class="pt-dot" aria-hidden="true"></span> point fixe · hachures = l'espace entre les deux éléments · dessin à l'échelle pour l'espace seulement.</p>
-    </section>
-
-    <div class="actions">
-      <button type="button" class="btn" id="copyBtn">Copier le résumé</button>
+  <section class="card result" aria-live="polite">
+    <div class="result-top">
+      <span class="kicker" id="rKicker"></span>
+      <div class="big" id="rBig">—</div>
+      <p class="why" id="rWhy"></p>
+      <p class="warn hidden" id="rWarn"></p>
+      <div class="verdict hidden" id="verdict"></div>
     </div>
-  </div>
+    <div class="verif" id="verif">
+      <label for="prevu">J'avais prévu</label>
+      <div class="unit" data-u="mm"><input id="prevu" inputmode="decimal" autocomplete="off" placeholder="ex. 10"><span class="u" aria-hidden="true"></span></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="hElem">
+    <h2 id="hElem">Les deux éléments</h2>
+    <div class="cols" id="cols">
+      <div class="col" id="colG">
+        <span class="lbl" id="lblG">Gauche</span>
+        <select id="gMat" aria-label="Matériau de l'élément de gauche"></select>
+        <div class="unit" data-u="mm"><input id="gLong" inputmode="decimal" autocomplete="off" aria-label="Longueur de l'élément de gauche"><span class="u" aria-hidden="true"></span></div>
+        <div class="unit coef-in hidden" data-u="µm/m·°C"><input id="gCoef" inputmode="decimal" autocomplete="off" aria-label="Coefficient de dilatation de l'élément de gauche"><span class="u" aria-hidden="true"></span></div>
+        <span class="coef" id="gCoefTxt"></span>
+      </div>
+      <div class="spacer" id="spacer" aria-hidden="true"></div>
+      <div class="col" id="colD">
+        <span class="lbl">Droite</span>
+        <select id="dMat" aria-label="Matériau de l'élément de droite"></select>
+        <div class="unit" data-u="mm" id="dLongBox"><input id="dLong" inputmode="decimal" autocomplete="off" aria-label="Longueur de l'élément de droite"><span class="u" aria-hidden="true"></span></div>
+        <div class="unit coef-in hidden" data-u="µm/m·°C"><input id="dCoef" inputmode="decimal" autocomplete="off" aria-label="Coefficient de dilatation de l'élément de droite"><span class="u" aria-hidden="true"></span></div>
+        <span class="coef" id="dCoefTxt"></span>
+      </div>
+    </div>
+    <p class="hint">Touche un rond pour dire <b>où l'élément est fixé</b> : le reste glisse dans des trous oblongs.</p>
+    <div class="draw" id="draw"></div>
+    <div class="fixes" id="fixes"></div>
+  </section>
+
+  <section class="card" aria-labelledby="hTemp">
+    <h2 id="hTemp">Températures</h2>
+    <div class="temps">
+      <div class="f f-amb"><label class="lbl" for="amb">Situation</label><select id="amb" aria-label="Situation"></select></div>
+      <div class="f"><label class="lbl" for="tMin">Mini</label><div class="unit" data-u="°C"><input id="tMin" inputmode="decimal" autocomplete="off"><span class="u" aria-hidden="true"></span></div></div>
+      <div class="f"><label class="lbl" for="tPose">Pose</label><div class="unit" data-u="°C"><input id="tPose" inputmode="decimal" autocomplete="off"><span class="u" aria-hidden="true"></span></div></div>
+      <div class="f"><label class="lbl" for="tMax">Maxi</label><div class="unit" data-u="°C"><input id="tMax" inputmode="decimal" autocomplete="off"><span class="u" aria-hidden="true"></span></div></div>
+      <div class="f" id="jeuBox"><label class="lbl" for="jeu">Espace mini en chaud</label><div class="unit" data-u="mm"><input id="jeu" inputmode="decimal" autocomplete="off"><span class="u" aria-hidden="true"></span></div></div>
+    </div>
+    <p class="hint" id="ambNote"></p>
+  </section>
+
+  <section class="card" aria-labelledby="hSchema">
+    <h2 id="hSchema">Selon la température</h2>
+    <div id="etats"></div>
+    <p class="hint legende" id="legende"></p>
+  </section>
+
+  <div class="actions"><button type="button" class="btn" id="copyBtn">Copier le résumé</button></div>
 
   <details class="card explain">
     <summary>Comment c'est calculé ?</summary>
     <div class="explain-body">
-      <p>Un élément de longueur <b>L</b> s'allonge de <b>coefficient × L × écart de température</b>. Exemple : un tube alu de 4 m passe de 20 °C à 80 °C : 23 × 4 × 60 = <b>5,5 mm</b>.</p>
-      <p>Seule la part qui avance <b>vers le joint</b> compte : tout si le point fixe est à l'autre bout, la moitié s'il est au centre, rien s'il est côté joint. L'espace à la pose = ce qui avance en chaud + l'espace minimal voulu en chaud. En froid, l'élément se raccourcit et l'espace s'ouvre d'autant.</p>
+      <p>Une pièce de longueur <b>L</b> s'allonge de <b>coefficient × L × écart de température</b>. Exemple : un tube alu de 4 m passe de 20 °C à 80 °C : 23 × 4 × 60 = <b>5,5 mm</b>.</p>
+      <p>Entre deux éléments, seule la part qui avance <b>vers le joint</b> compte : tout si le point fixe est à l'autre bout, la moitié s'il est au centre, rien s'il est côté joint. L'espace à la pose = ce qui avance en chaud + l'espace minimal voulu en chaud. En froid, les éléments se raccourcissent et l'espace s'ouvre d'autant.</p>
       <table class="coefs"><thead><tr><th>Matériau</th><th>Coefficient (µm/m·°C)</th></tr></thead><tbody id="coefsBody"></tbody></table>
       <p class="hint">Valeurs courantes, indicatives. Les températures « au soleil » supposent un élément sombre exposé ; à confirmer avec les règles du bureau et la fiche du fabricant.</p>
     </div>
   </details>
 </main>
 
-<footer>Joint v1.0 · <button type="button" id="aboutBtn">Conçu par Hugo N.</button> · 2026 · <a href="https://outils-hn.github.io/?app=Joint&amp;v=1.0&amp;page=%2FJoint%2F" target="_blank" rel="noopener noreferrer">Suggestion / bug</a></footer>
+<footer>Joint v1.1 · <button type="button" id="aboutBtn">Conçu par Hugo N.</button> · 2026 · <a href="https://outils-hn.github.io/?app=Joint&amp;v=1.1&amp;page=%2FJoint%2F" target="_blank" rel="noopener noreferrer">Suggestion / bug</a></footer>
 <div class="toast" id="toast" role="status"></div>
-<script type="module" src="js/app.js?v=1.0"></script>
+<script type="module" src="js/app.js?v=1.1"></script>
 </body>
 </html>
