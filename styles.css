@@ -150,3 +150,12 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .about-head b { display: block; font-size: 18px; }
 .apropos .actions { justify-content: flex-end; }
 .btn.ghost { background: transparent; color: var(--ink); }
+
+/* Zones tactiles : 44 px au doigt (écrans tactiles seulement, rien ne change à la souris) */
+@media (pointer: coarse) {
+  button, summary, #appsList a { min-height: 44px !important; }
+  .row .tg, .sel-pop button { min-height: 44px !important; }
+  .help, .linkish { min-height: 0 !important; }
+  footer a, footer button, .linkish, .help { position: relative; }
+  footer a::after, footer button::after, .linkish::after, .help::after { content: ""; position: absolute; inset: -14px -8px; }
+}
