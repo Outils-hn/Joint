@@ -139,3 +139,14 @@ footer a, footer button { color: inherit; background: none; border: 0; padding: 
 .slot .screw::before { width: 14px; height: 2px; } .slot .screw::after { width: 2px; height: 14px; }
 .sresult .big { font-size: 52px; }
 .sjoint .big { font-size: 40px; }
+
+/* Fenetre « A propos » (meme principe que les autres applis) */
+dialog { border: 1px solid var(--line); border-radius: 12px; padding: 0; background: var(--surface); color: var(--ink); width: min(380px, calc(100vw - 32px)); box-shadow: 0 12px 40px rgba(0,0,0,.25); }
+dialog::backdrop { background: rgba(0,0,0,.45); }
+.apropos { padding: 20px; display: grid; gap: 10px; }
+.apropos h3 { margin: 0; font-size: 18px; }
+.apropos p { margin: 0; }
+.about-head { display: flex; align-items: center; gap: 12px; }
+.about-head b { display: block; font-size: 18px; }
+.apropos .actions { justify-content: flex-end; }
+.btn.ghost { background: transparent; color: var(--ink); }

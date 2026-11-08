@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.11 — 8 novembre 2026
+
+- Nouveauté : un clic sur « Conçu par Hugo N. » en bas de page ouvre la même fenêtre « À propos » que dans les autres applis (nom, version, description, dernière mise à jour).
+
 ## 2.10 — 7 novembre 2026
 
 - Correction : la phrase d'accroche du bandeau est retirée.

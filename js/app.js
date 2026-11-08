@@ -156,6 +156,8 @@ async function copier(txt) {
     ta.remove();
   }
 }
-$("aboutBtn").addEventListener("click", () => toast("Joint v2.10 · conçu et développé par Hugo N."));
+$("aboutBtn").addEventListener("click", () => $("dApropos").showModal());
+$("daFermer").addEventListener("click", () => $("dApropos").close());
+$("dApropos").addEventListener("click", (e) => { if (e.target === $("dApropos")) $("dApropos").close(); });
 
 maj();
