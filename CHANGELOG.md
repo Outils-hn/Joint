@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.13 — 9 novembre 2026
+
+- Nouveauté : les nombres se lisent et s'affichent partout de la même façon : « 1.250,5 » est compris, un nombre ambigu (« 12..5 », « 1e3 ») est refusé, les milliers s'écrivent à la suisse (1'250) et jamais de « -0 ».
+
 ## 2.12 — 9 novembre 2026
 
 - Nouveauté : sous le joint à prévoir, une ligne indique le joint à régler si la pose se fait par temps froid (5 °C) ou chaud (30 °C), le plan étant calculé pour 20 °C. La même ligne est dans le texte copié.

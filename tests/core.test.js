@@ -51,3 +51,15 @@ test("pose a une autre temperature : 3 m d'alu au soleil = 5 mm a 20 °C, 6 mm a
   assert.equal(jointSimple({ ...b, tpose: 30 }).joint, 4);
   assert.equal(jointSimple({ ...b, tmax: 25, tpose: 30 }).joint, 0); // interieur : jamais negatif
 });
+
+test("lecture commune des nombres : suisse, francais, anglais, ambigus refuses", () => {
+  assert.equal(nombre("1.250,5"), 1250.5); assert.equal(nombre("1,250.5"), 1250.5);
+  assert.equal(nombre("1'250,5"), 1250.5); assert.equal(nombre("1 250"), 1250); assert.equal(nombre("12,5"), 12.5);
+  for (const s of ["1e3", "0x1F", "12..5", "1,2,3", "1.250,5,2", "", "abc", "Infinity"]) assert.ok(Number.isNaN(nombre(s)), s);
+  assert.equal(nombre("1.200"), 1.2); // un point seul reste une decimale
+});
+
+test("affichage commun : apostrophe suisse pour les milliers, jamais de -0", () => {
+  assert.equal(fmt(1234.5, 1), "1'234,5"); assert.equal(fmt(1234567, 0), "1'234'567"); assert.equal(fmt(-1234.5, 1), "-1'234,5");
+  assert.equal(fmt(999, 0), "999"); assert.equal(fmt(-0.001, 2), "0,00"); assert.equal(fmt(0, 1), "0,0");
+});
