@@ -43,3 +43,11 @@ test("donnees manquantes : pas de calcul", () => {
   assert.equal(jointSimple({ coef: 23, longueur: NaN, tmin: -20, tmax: 80 }), null);
   assert.equal(jointSimple({ coef: 23, longueur: 0, tmin: -20, tmax: 80 }), null);
 });
+
+test("pose a une autre temperature : 3 m d'alu au soleil = 5 mm a 20 °C, 6 mm a 5 °C, 4 mm a 30 °C", () => {
+  const b = { coef: 23, longueur: 3000, tmin: -20, tmax: 80 };
+  assert.equal(jointSimple({ ...b, tpose: 20 }).joint, 5);
+  assert.equal(jointSimple({ ...b, tpose: 5 }).joint, 6);
+  assert.equal(jointSimple({ ...b, tpose: 30 }).joint, 4);
+  assert.equal(jointSimple({ ...b, tmax: 25, tpose: 30 }).joint, 0); // interieur : jamais negatif
+});

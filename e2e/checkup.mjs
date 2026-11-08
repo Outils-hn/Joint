@@ -28,6 +28,7 @@ await step("Ecran de depart : 3 m d'alu au soleil", async () => {
   const { c, page } = await ouvrir();
   verif("Dilatation +4,1 mm", (await txt(page, "#sDil")) === "+4,1 mm", await txt(page, "#sDil"));
   verif("Joint entre deux pieces : 5 mm (4,14 arrondi), piece fixee au milieu", (await txt(page, "#sJoint")) === "5 mm", await txt(page, "#sJoint"));
+  verif("Pose a une autre temperature : 6 mm a 5 °C, 4 mm a 30 °C", /5 °C : 6 mm \(\+1\)/.test(await txt(page, "#sPose")) && /30 °C : 4 mm \(−1\)/.test(await txt(page, "#sPose")), await txt(page, "#sPose"));
   verif("Calcul exact affiche (4,1 mm)", /Calcul exact : 4,14 mm.*2,07 mm chacune.*au milieu/.test(await txt(page, "#sWhy")), await txt(page, "#sWhy"));
   verif("Hypothese affichee : jusqu'a 80 °C, pose a 20 °C", /jusqu.à 80 °C.*-20 °C.*20 °C/.test(await txt(page, "#sHyp")), await txt(page, "#sHyp"));
   verif("Trou oblong : 5 mm + Ø de la vis", (await txt(page, "#sTrou")) === "5 mm + Ø de la vis", await txt(page, "#sTrou"));
@@ -100,7 +101,7 @@ await step("Copie du resume, pied de page, menu des applis", async () => {
   verif("Message « Résumé copié »", /copi/i.test(await txt(page, "#toast")), await txt(page, "#toast"));
   const pied = await page.locator("footer").evaluate((el) => { const r = el.getBoundingClientRect(); return { centre: r.left + r.width / 2, page: document.documentElement.clientWidth / 2, align: getComputedStyle(el).textAlign }; });
   verif("Pied de page centre", pied.align === "center" && Math.abs(pied.centre - pied.page) < 2, JSON.stringify(pied));
-  verif("Pied de page : version 2.11", /Joint v2\.11/.test(await txt(page, "footer")), await txt(page, "footer"));
+  verif("Pied de page : version 2.12", /Joint v2\.12/.test(await txt(page, "footer")), await txt(page, "footer"));
   await page.click("#aboutBtn"); verif("Clic sur la signature : fenetre « À propos » (nom, version)", await page.locator("#dApropos[open]").count() === 1 && /À propos/.test(await txt(page, "#dApropos")) && /Version /.test(await txt(page, "#dApropos")), await txt(page, "#dApropos")); await page.click("#daFermer"); verif("La fenetre se ferme", await page.locator("#dApropos[open]").count() === 0);
   await page.locator("#appsMenu summary").click();
   verif("Le menu liste les applis dont Joint", (await page.locator("#appsList a").count()) === 11);

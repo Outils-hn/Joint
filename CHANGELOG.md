@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.12 — 9 novembre 2026
+
+- Nouveauté : sous le joint à prévoir, une ligne indique le joint à régler si la pose se fait par temps froid (5 °C) ou chaud (30 °C), le plan étant calculé pour 20 °C. La même ligne est dans le texte copié.
+
 ## 2.11 — 8 novembre 2026
 
 - Nouveauté : un clic sur « Conçu par Hugo N. » en bas de page ouvre la même fenêtre « À propos » que dans les autres applis (nom, version, description, dernière mise à jour).
