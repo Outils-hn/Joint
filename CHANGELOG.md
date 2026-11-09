@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.16 — 9 novembre 2026
+
+- Nouveauté : la petite phrase sur la pose à 5 °C et 30 °C est retirée (elle prêtait à confusion pour une différence minime), sur l'écran comme dans le texte copié.
+
 ## 2.15 — 9 novembre 2026
 
 - Nouveauté : Joint s'installe sur le téléphone (menu du navigateur, « Ajouter à l'écran d'accueil ») et s'ouvre aussi sans réseau, sur un toit ou en sous-sol.
