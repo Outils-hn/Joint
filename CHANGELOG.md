@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.15 — 9 novembre 2026
+
+- Nouveauté : Joint s'installe sur le téléphone (menu du navigateur, « Ajouter à l'écran d'accueil ») et s'ouvre aussi sans réseau, sur un toit ou en sous-sol.
+
 ## 2.14 — 9 novembre 2026
 
 - Nouveauté : au téléphone, les boutons et menus font 44 px de haut et les liens du pied de page se touchent plus facilement.
