@@ -101,7 +101,7 @@ await step("Copie du resume, pied de page, menu des applis", async () => {
   verif("Message « Résumé copié »", /copi/i.test(await txt(page, "#toast")), await txt(page, "#toast"));
   const pied = await page.locator("footer").evaluate((el) => { const r = el.getBoundingClientRect(); return { centre: r.left + r.width / 2, page: document.documentElement.clientWidth / 2, align: getComputedStyle(el).textAlign }; });
   verif("Pied de page centre", pied.align === "center" && Math.abs(pied.centre - pied.page) < 2, JSON.stringify(pied));
-  verif("Pied de page : version 2.14", /Joint v2\.14/.test(await txt(page, "footer")), await txt(page, "footer"));
+  verif("Pied de page : version 2.15", /Joint v2\.15/.test(await txt(page, "footer")), await txt(page, "footer"));
   await page.click("#aboutBtn"); verif("Clic sur la signature : fenetre « À propos » (nom, version)", await page.locator("#dApropos[open]").count() === 1 && /À propos/.test(await txt(page, "#dApropos")) && /Version /.test(await txt(page, "#dApropos")), await txt(page, "#dApropos")); await page.click("#daFermer"); verif("La fenetre se ferme", await page.locator("#dApropos[open]").count() === 0);
   await page.locator("#appsMenu summary").click();
   verif("Le menu liste les applis dont Joint", (await page.locator("#appsList a").count()) === 11);
