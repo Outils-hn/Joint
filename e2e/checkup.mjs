@@ -36,7 +36,7 @@ await step("Ecran de depart : 3 m d'alu au soleil", async () => {
   verif("Plus de choix de fixation : un seul ecran simple", (await page.locator("#sFix").count()) === 0);
   verif("Le joint est visible sans defiler (ordinateur)", await page.locator("#sJoint").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
   verif("Le champ affiche « 3000 mm »", (await page.locator("#sLong").evaluate((el) => el.value)) === "3000" && (await page.locator("#sLong + .u").evaluate((el) => el.textContent.replace(/\s+/g, " ").trim())) === "3000 mm");
-  verif("Aucun reglage detaille : un seul champ de longueur", (await page.locator("input").count()) === 2);
+  verif("Aucun reglage detaille : un seul champ de longueur", (await page.locator("input").evaluateAll((els) => els.filter((e) => !e.closest("dialog")).length)) === 2);
   await page.screenshot({ path: `${OUT}/01-depart.png`, fullPage: true });
   await c.close();
 });
@@ -100,8 +100,15 @@ await step("Copie du resume, pied de page, menu des applis", async () => {
   verif("Message « Résumé copié »", /copi/i.test(await txt(page, "#toast")), await txt(page, "#toast"));
   const pied = await page.locator("footer").evaluate((el) => { const r = el.getBoundingClientRect(); return { centre: r.left + r.width / 2, page: document.documentElement.clientWidth / 2, align: getComputedStyle(el).textAlign }; });
   verif("Pied de page centre", pied.align === "center" && Math.abs(pied.centre - pied.page) < 2, JSON.stringify(pied));
-  verif("Pied de page : version 2.16", /Joint v2\.16/.test(await txt(page, "footer")), await txt(page, "footer"));
+  verif("Pied de page : version 2.17", /Joint v2\.17/.test(await txt(page, "footer")), await txt(page, "footer"));
   await page.click("#aboutBtn"); verif("Clic sur la signature : fenetre « À propos » (nom, version)", await page.locator("#dApropos[open]").count() === 1 && /À propos/.test(await txt(page, "#dApropos")) && /Version /.test(await txt(page, "#dApropos")), await txt(page, "#dApropos")); await page.click("#daFermer"); verif("La fenetre se ferme", await page.locator("#dApropos[open]").count() === 0);
+  verif("Bandeau : « Lecture seule » et « Se connecter » comme les autres applis", /Lecture seule/.test(await txt(page, "#etatCompte")) && /Se connecter/.test(await txt(page, "#compteBtn")));
+  await page.evaluate(() => localStorage.setItem("sb-dtxgvwaqjmmffiiohika-auth-token", JSON.stringify({ access_token: "t", expires_at: 9999999999, user: { email: "hugo@exemple.ch" } })));
+  await page.reload({ waitUntil: "load" });
+  const coul = await page.locator("#etatCompte").evaluate((el) => getComputedStyle(el).borderTopColor);
+  verif("Bandeau connecté : adresse entourée de la couleur de l'appli + « Se déconnecter »", /hugo@exemple\.ch/.test(await txt(page, "#etatCompte")) && /Se déconnecter/.test(await txt(page, "#compteBtn")) && coul !== "rgb(232, 232, 229)", coul);
+  await page.click("#compteBtn");
+  verif("Se déconnecter : retour en lecture seule", /Lecture seule/.test(await txt(page, "#etatCompte")) && !(await page.evaluate(() => localStorage.getItem("sb-dtxgvwaqjmmffiiohika-auth-token"))));
   await page.locator("#appsMenu summary").click();
   verif("Le menu liste les applis dont Joint", (await page.locator("#appsList a").count()) === 11);
   verif("Joint s'appelle « Dilatation et joints »", /Dilatation et joints/.test(await txt(page, "#appsList")), await txt(page, "#appsList"));
