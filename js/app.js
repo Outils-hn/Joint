@@ -112,13 +112,6 @@ function majUnites() {
 $("sAmb").innerHTML = Object.keys(AMBIANCES).reverse().map((k) => `<button type="button" role="radio" data-k="${k}">${AMB_NOMS[k]}</button>`).join("");
 $("sAmb").addEventListener("click", (e) => { const b = e.target.closest("button[data-k]"); if (b) { s.sAmb = b.dataset.k; maj(); } });
 let dernier = null;
-/** Joint a regler si la pose se fait par temps froid (5 °C) ou chaud (30 °C) : le plan est calcule pour 20 °C. */
-function textePose(r) {
-  const amb = AMBIANCES[s.sAmb], base = { coef: MATERIAUX[s.sMat].coef, longueur: nombre(s.sLong), tmin: amb.tmin, tmax: amb.tmax };
-  const froid = jointSimple({ ...base, tpose: 5 }).joint, chaud = jointSimple({ ...base, tpose: 30 }).joint;
-  const d = (x) => (x === r.joint ? "" : ` (${x > r.joint ? "+" : "−"}${fmt(Math.abs(x - r.joint), 0)})`);
-  return `Le plan compte une pose à 20 °C. Posé à 5 °C : ${fmt(froid, 0)} mm${d(froid)}. Posé à 30 °C : ${fmt(chaud, 0)} mm${d(chaud)}.`;
-}
 function maj() {
   sauver();
   majSelect("sMat"); majChamps(); majUnites();
@@ -129,7 +122,6 @@ function maj() {
   dernier = r;
   $("sCopy").disabled = !r;
   if (!r) {
-    $("sPose").textContent = "";
     for (const id of ["sDil", "sJoint", "sTrou"]) $(id).textContent = "—";
     $("sWhy").textContent = "Renseigne la longueur de la pièce (en mm).";
     $("sTrouWhy").textContent = ""; $("sDraw").innerHTML = ""; $("sSlot").innerHTML = "";
@@ -138,7 +130,6 @@ function maj() {
   $("sDil").innerHTML = `+${fmt(r.dilatation)} <small>mm</small>`;
   $("sJoint").innerHTML = `${fmt(r.joint, 0)} <small>mm</small>`;
   $("sWhy").textContent = `Calcul exact : ${mm(2 * c2(r.avance), 2)}. Les deux pièces avancent l'une vers l'autre de ${mm(c2(r.avance), 2)} chacune (pièce fixée au milieu : la moitié de l'allongement). Arrondi au mm supérieur.`;
-  $("sPose").textContent = textePose(r);
   $("sDraw").innerHTML = `<div class="b1"></div><div class="gj" style="width:${Math.max(16, Math.min(90, r.joint * 4))}px"></div><div class="b2"></div>`;
   $("sTrou").innerHTML = `${fmt(r.trou, 0)} <small>mm + Ø de la vis</small>`;
   $("sSlot").innerHTML = `<span class="h">${mm(c2(r.demi) + r.reglage, 2)}</span><span class="screw"></span><span class="h">${mm(c2(r.demi) + r.reglage, 2)}</span>`;
@@ -151,7 +142,6 @@ $("sCopy").addEventListener("click", () => {
     `Dilatation : ${NOM_MAT[s.sMat]} ${fmt(nombre(s.sLong), 0)} mm, ${amb.nom.toLowerCase()} (de ${amb.tmin} à ${amb.tmax} °C, pose à 20 °C), pièce fixée au milieu`,
     `Dilatation de chaque pièce : +${fmt(dernier.dilatation)} mm (chaque bout avance de ${fmt(c2(dernier.avance), 2)} mm)`,
     `Joint à prévoir entre deux pièces : ${fmt(dernier.joint, 0)} mm (calcul exact ${fmt(2 * c2(dernier.avance), 2)} mm, arrondi au mm supérieur)`,
-    textePose(dernier),
     `Trou oblong si la pièce est vissée : ${fmt(dernier.trou, 0)} mm + Ø de la vis, vis au milieu${dernier.reglage > 0 ? ` (dont réglage de pose ± ${fmt(dernier.reglage, 0)} mm)` : ""}`,
   ].join("\n"));
 });
