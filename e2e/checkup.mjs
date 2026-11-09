@@ -36,7 +36,7 @@ await step("Ecran de depart : 3 m d'alu au soleil", async () => {
   verif("Plus de choix de fixation : un seul ecran simple", (await page.locator("#sFix").count()) === 0);
   verif("Le joint est visible sans defiler (ordinateur)", await page.locator("#sJoint").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
   verif("Le champ affiche « 3000 mm »", (await page.locator("#sLong").evaluate((el) => el.value)) === "3000" && (await page.locator("#sLong + .u").evaluate((el) => el.textContent.replace(/\s+/g, " ").trim())) === "3000 mm");
-  verif("Aucun reglage detaille : un seul champ de longueur", (await page.locator("input").count()) === 2);
+  verif("Aucun reglage detaille : un seul champ de longueur", (await page.locator("input").evaluateAll((els) => els.filter((e) => !e.closest("dialog")).length)) === 2);
   await page.screenshot({ path: `${OUT}/01-depart.png`, fullPage: true });
   await c.close();
 });
