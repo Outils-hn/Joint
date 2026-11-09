@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.17 — 9 novembre 2026
+
+- Nouveauté : le bandeau de Joint affiche, comme les autres applis, ton adresse (entourée de la couleur de l'appli) et le bouton « Se connecter » / « Se déconnecter ». La connexion est la même partout.
+
 ## 2.16 — 9 novembre 2026
 
 - Nouveauté : la petite phrase sur la pose à 5 °C et 30 °C est retirée (elle prêtait à confusion pour une différence minime), sur l'écran comme dans le texte copié.

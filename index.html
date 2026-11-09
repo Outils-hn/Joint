@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="styles.css?v=2.16">
+<link rel="stylesheet" href="styles.css?v=2.17">
 </head>
 <body>
 <header class="topbar">
@@ -36,6 +36,8 @@
       </details>
     </div>
     <span class="grow"></span>
+    <span class="etat-compte" id="etatCompte">Lecture seule</span>
+    <button class="pill" id="compteBtn" type="button">Se connecter</button>
     <button class="pill" id="themeBtn" title="Changer de thème"></button>
   </div>
 </header>
@@ -81,7 +83,18 @@
   <div class="actions"><button type="button" class="btn" id="sCopy">Copier le résumé</button></div>
 </main>
 
-<footer>Joint v2.16 · <button type="button" id="aboutBtn">Conçu par Hugo N.</button> · 2026 · <a href="https://outils-hn.github.io/?app=Joint&amp;v=2.16&amp;page=%2FJoint%2F" target="_blank" rel="noopener noreferrer">Suggestion / bug</a></footer>
+<footer>Joint v2.17 · <button type="button" id="aboutBtn">Conçu par Hugo N.</button> · 2026 · <a href="https://outils-hn.github.io/?app=Joint&amp;v=2.17&amp;page=%2FJoint%2F" target="_blank" rel="noopener noreferrer">Suggestion / bug</a></footer>
+<dialog id="dConnexion" aria-labelledby="dc-titre">
+  <form id="formConnexion" method="dialog" class="apropos">
+    <h3 id="dc-titre">Connexion</h3>
+    <p class="hint" style="margin:0">Votre compte Index, valable partout.</p>
+    <label class="f"><span class="lbl">Email</span><input id="cEmail" name="email" type="email" autocomplete="username"></label>
+    <label class="f"><span class="lbl">Mot de passe</span><input id="cMdp" name="mdp" type="password" autocomplete="current-password"></label>
+    <p class="erreur" id="cErreur" role="alert"></p>
+    <p class="hint" style="margin:0"><span class="block">Pas encore de compte ? <a href="https://outils-hn.github.io/Index/auth" target="_blank" rel="noopener noreferrer">Créez-le dans Index</a>.</span><span class="block">Un collègue doit ensuite le valider.</span></p>
+    <div class="actions"><button type="button" class="btn ghost" id="cAnnuler">Annuler</button><button type="submit" class="btn" id="cOk">Se connecter</button></div>
+  </form>
+</dialog>
 <dialog id="dApropos" aria-labelledby="da-titre">
   <div class="apropos">
     <h3 id="da-titre">À propos</h3>
@@ -90,7 +103,7 @@
         <rect x="13.5" y="6" width="7" height="10" fill="var(--joint)"/>
         <path d="M9.5 11h3M10.8 9.2L9.5 11l1.3 1.8M11.2 9.2l1.3 1.8-1.3 1.8" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <div><b>Joint</b><span class="hint">Version 2.16</span></div></div>
+      <div><b>Joint</b><span class="hint">Version 2.17</span></div></div>
     <p>Conçu et développé par Hugo N.</p>
     <p class="hint">Dilatation : quel espace laisser selon le matériau et la longueur, et de combien ça bouge.</p>
     <p class="hint">Dernière mise à jour : 8 novembre 2026</p>
@@ -98,7 +111,7 @@
   </div>
 </dialog>
 <div class="toast" id="toast" role="status"></div>
-<script type="module" src="js/app.js?v=2.16"></script>
+<script type="module" src="js/app.js?v=2.17"></script>
 <script>
   // Hors ligne : la copie de l'appli est gardee sur le poste (voir sw.js)
   if ("serviceWorker" in navigator && location.protocol !== "file:") addEventListener("load", () => {

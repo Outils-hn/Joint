@@ -160,4 +160,43 @@ $("aboutBtn").addEventListener("click", () => $("dApropos").showModal());
 $("daFermer").addEventListener("click", () => $("dApropos").close());
 $("dApropos").addEventListener("click", (e) => { if (e.target === $("dApropos")) $("dApropos").close(); });
 
+// ---------- Compte (meme connexion que les autres applis : Index, meme site) ----------
+const SB_URL = "https://dtxgvwaqjmmffiiohika.supabase.co";
+const SB_KEY = "sb_publishable_yEWGxFFSLTE1lJRXnFUmpg_dMwa6LxW";
+const SESSION_KEY = "sb-dtxgvwaqjmmffiiohika-auth-token";
+const lireSession = () => { try { const s = JSON.parse(localStorage.getItem(SESSION_KEY)); return s && s.access_token ? s : null; } catch (e) { return null; } };
+const ecrireSession = (s) => { try { if (s) localStorage.setItem(SESSION_KEY, JSON.stringify(s)); else localStorage.removeItem(SESSION_KEY); } catch (e) { /* ignore */ } };
+function afficherCompte() {
+  const s = lireSession();
+  $("etatCompte").textContent = s ? (s.user?.email || "") : "Lecture seule";
+  $("etatCompte").classList.toggle("on", !!s);
+  $("compteBtn").textContent = s ? "Se déconnecter" : "Se connecter";
+}
+async function seConnecter(email, mdp) {
+  try {
+    const r = await fetch(SB_URL + "/auth/v1/token?grant_type=password", { method: "POST", headers: { apikey: SB_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ email: email.trim(), password: mdp }) });
+    const j = await r.json();
+    if (!r.ok) {
+      const m = String(j.error_description || j.msg || "");
+      return /invalid login/i.test(m) ? "Email ou mot de passe incorrect." : /confirm/i.test(m) ? "Adresse email pas encore confirmée : ouvre le lien reçu par email." : (m || "Connexion impossible.");
+    }
+    ecrireSession({ ...j, expires_at: j.expires_at || Math.floor(Date.now() / 1000) + (j.expires_in || 3600) }); return null;
+  } catch (e) { return "Pas de connexion au serveur."; }
+}
+$("compteBtn").addEventListener("click", () => {
+  if (lireSession()) { ecrireSession(null); toast("Déconnecté"); afficherCompte(); return; }
+  $("formConnexion").reset(); $("cErreur").textContent = ""; $("dConnexion").showModal(); $("cEmail").focus();
+});
+$("formConnexion").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const bouton = $("cOk"); bouton.disabled = true;
+  const err = !$("cEmail").value || !$("cMdp").value ? "Saisis l'email et le mot de passe." : await seConnecter($("cEmail").value, $("cMdp").value);
+  bouton.disabled = false;
+  if (err) { $("cErreur").textContent = err; return; }
+  $("dConnexion").close(); afficherCompte();
+});
+$("cAnnuler").addEventListener("click", () => $("dConnexion").close());
+window.addEventListener("storage", (e) => { if (e.key === SESSION_KEY) afficherCompte(); });
+
+afficherCompte();
 maj();
