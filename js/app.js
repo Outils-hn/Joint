@@ -35,7 +35,6 @@ const c2 = (n) => Math.round(n * 100) / 100;
 // ---------- Menu des applis ----------
 $("appsList").innerHTML = `<div class="apps-label">Mes outils</div>
   <a href="https://outils-hn.github.io/"><span class="sw" style="background:conic-gradient(#C2255C 0 25%,#6D4AFF 0 50%,#0E9F6E 0 75%,#FF4D00 0)"></span><span class="nm">Accueil</span><span class="rl">Toutes les applis, idées &amp; bugs</span></a>
-  <a href="https://outils-hn.github.io/#recherche" target="outils-accueil"><span class="sw ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span><span class="nm">Rechercher</span><span class="rl">Ctrl K · toutes les applis</span></a>
   <div class="apps-sep" role="separator"></div>` +
   APPLIS.map(([nom, role, c]) => `<a href="https://outils-hn.github.io/${nom}/"${nom === "Joint" ? ' aria-current="page"' : ""}><span class="sw" style="background:${c}"></span><span class="nm">${nom}</span><span class="rl">${role.replace("&", "&amp;")}</span>${nom === "Joint" ? '<span class="ck" aria-hidden="true">✓</span>' : ""}</a>`).join("");
 document.addEventListener("click", (e) => { const m = $("appsMenu"); if (m.open && !m.contains(e.target)) m.open = false; });
@@ -43,7 +42,7 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("appsM
 
 // ---------- Theme clair / sombre (reglage commun aux applis) ----------
 const ICONES = {
-  light: '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12.22v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2.22 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  light: '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12.23v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2.23 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
   dark: '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
 };
 function themeActuel() {
@@ -239,3 +238,6 @@ document.addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.
     e.preventDefault(); d.showModal();
   });
 })();
+
+// Bouton « Rechercher » du bandeau : meme recherche que Ctrl+K (ouvre l'Accueil dans un autre onglet)
+document.getElementById("rechercheBtn")?.addEventListener("click", () => window.open("https://outils-hn.github.io/#recherche", "outils-accueil"));

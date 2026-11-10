@@ -172,3 +172,5 @@ dialog form.apropos { padding: 20px; }
 .block { display: block; }
 dialog a { color: inherit; }
 label.f { display: grid; gap: 4px; }
+
+@media (max-width: 640px) { #rechercheBtn { display: none; } }
