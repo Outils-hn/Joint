@@ -4,9 +4,16 @@ import { MATERIAUX, AMBIANCES, jointSimple, nombre, fmt } from "./core.js";
 const $ = (id) => document.getElementById(id);
 const CLE = "joint.reglages";
 const APPLIS = [
-  ["Access", "Annuaire fournisseurs", "#C2255C"], ["Check", "Notes & tâches", "#4338CA"], ["Format", "Débit de panneaux", "#FF4D00"],
-  ["Index", "Fiches techniques", "#6D4AFF"], ["Joint", "Dilatation et joints", "#0B7285"], ["Linear", "Mise en barre", "#2B50FF"],
-  ["Masse", "Poids des éléments", "#9A4A3A"], ["Membrane", "Étanchéité", "#B45309"], ["Strate", "Épaisseurs d'isolation", "#D4A20B"], ["Trame", "Répartition de perçages", "#0E9F6E"],
+  ["Check", "Notes & tâches", "#4338CA"],
+  ["Index", "Fiches techniques", "#6D4AFF"],
+  ["Access", "Annuaire fournisseurs", "#C2255C"],
+  ["Trame", "Répartition de perçages", "#0E9F6E"],
+  ["Linear", "Mise en barre", "#2B50FF"],
+  ["Format", "Débit de panneaux", "#FF4D00"],
+  ["Joint", "Dilatation et joints", "#0B7285"],
+  ["Masse", "Poids des éléments", "#9A4A3A"],
+  ["Membrane", "Étanchéité", "#B45309"],
+  ["Strate", "Épaisseurs d'isolation", "#D4A20B"],
 ];
 
 // Cas de depart : 3 m d'alu en plein soleil
@@ -36,7 +43,7 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("appsM
 
 // ---------- Theme clair / sombre (reglage commun aux applis) ----------
 const ICONES = {
-  light: '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12.21v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2.21 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  light: '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12.22v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2.22 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
   dark: '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
 };
 function themeActuel() {
