@@ -24,10 +24,17 @@ const mm = (n, d = 1) => `${fmt(n, d)} mm`;
 // Detail du calcul : 2 decimales, et les totaux sont refaits a partir des valeurs affichees (2,76 + 2,76 = 5,52 : l'addition tombe toujours juste a l'ecran)
 const c2 = (n) => Math.round(n * 100) / 100;
 
+// « Noter dans Check » : Check dans un autre onglet, note deja commencee par le numero du chantier choisi dans l'Accueil
+function lienNoter() {
+  const base = "https://outils-hn.github.io/Check/";
+  try { const n = String(JSON.parse(localStorage.getItem("outils-chantier-info") ?? "null")?.numero ?? "").trim(); return n ? `${base}?noter=${encodeURIComponent(`#${n} `)}` : base; } catch { return base; }
+}
+
 // ---------- Menu des applis ----------
 $("appsList").innerHTML = `<div class="apps-label">Mes outils</div>
   <a href="https://outils-hn.github.io/"><span class="sw" style="background:conic-gradient(#C2255C 0 25%,#6D4AFF 0 50%,#0E9F6E 0 75%,#FF4D00 0)"></span><span class="nm">Accueil</span><span class="rl">Toutes les applis, idées &amp; bugs</span></a>
   <a href="https://outils-hn.github.io/#recherche" target="outils-accueil"><span class="sw" style="background:#5D6068"></span><span class="nm">Rechercher</span><span class="rl">Ctrl K · toutes les applis</span></a>
+  <a href="${lienNoter()}" target="outils-check"><span class="sw" style="background:#5D6068"></span><span class="nm">Noter</span><span class="rl">Dans Check · avec le chantier</span></a>
   <div class="apps-sep" role="separator"></div>` +
   APPLIS.map(([nom, role, c]) => `<a href="https://outils-hn.github.io/${nom}/"${nom === "Joint" ? ' aria-current="page"' : ""}><span class="sw" style="background:${c}"></span><span class="nm">${nom}</span><span class="rl">${role.replace("&", "&amp;")}</span>${nom === "Joint" ? '<span class="ck" aria-hidden="true">✓</span>' : ""}</a>`).join("");
 document.addEventListener("click", (e) => { const m = $("appsMenu"); if (m.open && !m.contains(e.target)) m.open = false; });
