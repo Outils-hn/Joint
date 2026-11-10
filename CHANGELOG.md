@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.18 — 10 novembre 2026
+
+- Nouveauté : Ctrl+K ouvre la recherche de l'Accueil (applis, chantiers, fiches Index, notes Check) dans un nouvel onglet ; le menu des applis propose aussi « Rechercher ».
+
 ## 2.17 — 9 novembre 2026
 
 - Nouveauté : le bandeau de Joint affiche, comme les autres applis, ton adresse (entourée de la couleur de l'appli) et le bouton « Se connecter » / « Se déconnecter ». La connexion est la même partout.
