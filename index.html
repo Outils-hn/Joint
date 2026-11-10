@@ -17,18 +17,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="styles.css?v=2.24">
+<link rel="stylesheet" href="styles.css?v=2.25">
 </head>
 <body>
 <header class="topbar">
   <div class="topbar-in">
     <div class="brand">
       <!-- Logo : deux elements et l'espace entre eux -->
-      <svg width="22" height="22" viewBox="0 0 22.23" aria-hidden="true">
-        <rect x="1.5" y="6" width="7" height="10" fill="var(--joint)"/>
-        <rect x="13.5" y="6" width="7" height="10" fill="var(--joint)"/>
-        <path d="M9.5 11h3M10.8 9.2L9.5 11l1.3 1.8M11.2 9.2l1.3 1.8-1.3 1.8" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5.5" fill="#0B7285"/><g transform="translate(4.56 4.56) scale(.62)" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="6.5" height="8" rx="1"/><rect x="14.5" y="8" width="6.5" height="8" rx="1"/></g></svg>
       <details class="apps" id="appsMenu">
         <summary aria-label="Changer d'application"><h1 class="app-name">Joint</h1>
           <svg class="chev" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -85,7 +81,7 @@
   <div class="actions"><button type="button" class="btn" id="sCopy">Copier le résumé</button></div>
 </main>
 
-<footer>Joint v2.24 · <button type="button" id="aboutBtn">Conçu par Hugo N.</button> · 2026 · <a href="https://outils-hn.github.io/?app=Joint&amp;v=2.24&amp;page=%2FJoint%2F" target="_blank" rel="noopener noreferrer">Suggestion / bug</a></footer>
+<footer>Joint v2.25 · <button type="button" id="aboutBtn">Conçu par Hugo N.</button> · 2026 · <a href="https://outils-hn.github.io/?app=Joint&amp;v=2.25&amp;page=%2FJoint%2F" target="_blank" rel="noopener noreferrer">Suggestion / bug</a></footer>
 <dialog id="dConnexion" aria-labelledby="dc-titre">
   <form id="formConnexion" method="dialog" class="apropos">
     <h3 id="dc-titre">Connexion</h3>
@@ -100,12 +96,8 @@
 <dialog id="dApropos" aria-labelledby="da-titre">
   <div class="apropos">
     <h3 id="da-titre">À propos</h3>
-    <div class="about-head"><svg width="40" height="40" viewBox="0 0 22.23" aria-hidden="true">
-        <rect x="1.5" y="6" width="7" height="10" fill="var(--joint)"/>
-        <rect x="13.5" y="6" width="7" height="10" fill="var(--joint)"/>
-        <path d="M9.5 11h3M10.8 9.2L9.5 11l1.3 1.8M11.2 9.2l1.3 1.8-1.3 1.8" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <div><b>Joint</b><span class="hint">Version 2.24</span></div></div>
+    <div class="about-head"><svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5.5" fill="#0B7285"/><g transform="translate(4.56 4.56) scale(.62)" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="6.5" height="8" rx="1"/><rect x="14.5" y="8" width="6.5" height="8" rx="1"/></g></svg>
+      <div><b>Joint</b><span class="hint">Version 2.25</span></div></div>
     <p>Conçu et développé par Hugo N.</p>
     <p class="hint">Dilatation : quel espace laisser selon le matériau et la longueur, et de combien ça bouge.</p>
     <p class="hint">Dernière mise à jour : 8 novembre 2026</p>
@@ -113,7 +105,7 @@
   </div>
 </dialog>
 <div class="toast" id="toast" role="status"></div>
-<script type="module" src="js/app.js?v=2.24"></script>
+<script type="module" src="js/app.js?v=2.25"></script>
 <script>
   // Hors ligne : la copie de l'appli est gardee sur le poste (voir sw.js)
   if ("serviceWorker" in navigator && location.protocol !== "file:") addEventListener("load", () => {
