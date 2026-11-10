@@ -110,7 +110,7 @@ await step("Copie du resume, pied de page, menu des applis", async () => {
   await page.click("#compteBtn");
   verif("Se déconnecter : retour en lecture seule", /Lecture seule/.test(await txt(page, "#etatCompte")) && !(await page.evaluate(() => localStorage.getItem("sb-dtxgvwaqjmmffiiohika-auth-token"))));
   await page.locator("#appsMenu summary").click();
-  verif("Le menu liste les applis dont Joint", (await page.locator("#appsList a").count()) === 11);
+  verif("Le menu liste les applis dont Joint", (await page.locator("#appsList a").count()) === 12);
   verif("Joint s'appelle « Dilatation et joints »", /Dilatation et joints/.test(await txt(page, "#appsList")), await txt(page, "#appsList"));
   await c.close();
 });
