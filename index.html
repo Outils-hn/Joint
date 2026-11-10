@@ -16,14 +16,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="styles.css?v=2.22">
+<link rel="stylesheet" href="styles.css?v=2.23">
 </head>
 <body>
 <header class="topbar">
   <div class="topbar-in">
     <div class="brand">
       <!-- Logo : deux elements et l'espace entre eux -->
-      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 22.23" aria-hidden="true">
         <rect x="1.5" y="6" width="7" height="10" fill="var(--joint)"/>
         <rect x="13.5" y="6" width="7" height="10" fill="var(--joint)"/>
         <path d="M9.5 11h3M10.8 9.2L9.5 11l1.3 1.8M11.2 9.2l1.3 1.8-1.3 1.8" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
@@ -37,6 +37,7 @@
     </div>
     <span class="grow"></span>
     <span class="etat-compte" id="etatCompte">Lecture seule</span>
+    <button class="pill" id="rechercheBtn" type="button" title="Rechercher dans toutes les applis (Ctrl+K)" aria-label="Rechercher dans toutes les applis (Ctrl+K)">Rechercher <kbd style="font:11px ui-monospace,monospace;color:var(--muted);border:1px solid var(--line-strong,#d4d4cf);border-radius:4px;padding:0 4px;margin-left:4px">Ctrl K</kbd></button>
     <button class="pill" id="compteBtn" type="button">Se connecter</button>
     <button class="pill" id="themeBtn" title="Changer de thème"></button>
   </div>
@@ -83,7 +84,7 @@
   <div class="actions"><button type="button" class="btn" id="sCopy">Copier le résumé</button></div>
 </main>
 
-<footer>Joint v2.22 · <button type="button" id="aboutBtn">Conçu par Hugo N.</button> · 2026 · <a href="https://outils-hn.github.io/?app=Joint&amp;v=2.22&amp;page=%2FJoint%2F" target="_blank" rel="noopener noreferrer">Suggestion / bug</a></footer>
+<footer>Joint v2.23 · <button type="button" id="aboutBtn">Conçu par Hugo N.</button> · 2026 · <a href="https://outils-hn.github.io/?app=Joint&amp;v=2.23&amp;page=%2FJoint%2F" target="_blank" rel="noopener noreferrer">Suggestion / bug</a></footer>
 <dialog id="dConnexion" aria-labelledby="dc-titre">
   <form id="formConnexion" method="dialog" class="apropos">
     <h3 id="dc-titre">Connexion</h3>
@@ -98,12 +99,12 @@
 <dialog id="dApropos" aria-labelledby="da-titre">
   <div class="apropos">
     <h3 id="da-titre">À propos</h3>
-    <div class="about-head"><svg width="40" height="40" viewBox="0 0 22 22" aria-hidden="true">
+    <div class="about-head"><svg width="40" height="40" viewBox="0 0 22.23" aria-hidden="true">
         <rect x="1.5" y="6" width="7" height="10" fill="var(--joint)"/>
         <rect x="13.5" y="6" width="7" height="10" fill="var(--joint)"/>
         <path d="M9.5 11h3M10.8 9.2L9.5 11l1.3 1.8M11.2 9.2l1.3 1.8-1.3 1.8" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <div><b>Joint</b><span class="hint">Version 2.22</span></div></div>
+      <div><b>Joint</b><span class="hint">Version 2.23</span></div></div>
     <p>Conçu et développé par Hugo N.</p>
     <p class="hint">Dilatation : quel espace laisser selon le matériau et la longueur, et de combien ça bouge.</p>
     <p class="hint">Dernière mise à jour : 8 novembre 2026</p>
@@ -111,7 +112,7 @@
   </div>
 </dialog>
 <div class="toast" id="toast" role="status"></div>
-<script type="module" src="js/app.js?v=2.22"></script>
+<script type="module" src="js/app.js?v=2.23"></script>
 <script>
   // Hors ligne : la copie de l'appli est gardee sur le poste (voir sw.js)
   if ("serviceWorker" in navigator && location.protocol !== "file:") addEventListener("load", () => {
