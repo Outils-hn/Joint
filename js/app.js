@@ -1,5 +1,5 @@
 // Joint : affichage et saisie. Les calculs sont dans core.js.
-import { MATERIAUX, AMBIANCES, jointSimple, nombre, fmt } from "./core.js";
+import { MATERIAUX, AMBIANCES, jointSimple, mastic, profondeurMastic, CARTOUCHE_ML, SACHET_ML, nombre, fmt } from "./core.js";
 
 const $ = (id) => document.getElementById(id);
 const CLE = "joint.reglages";
@@ -18,7 +18,7 @@ const APPLIS = [
 ];
 
 // Cas de depart : 3 m d'alu en plein soleil
-const DEFAUT = { sMat: "alu", sLong: "3000", sAmb: "soleil", sReg: "" };
+const DEFAUT = { sMat: "alu", sLong: "3000", sAmb: "soleil", sReg: "", mLarg: "10", mProf: "", mLong: "10", mPert: "10" };
 let s = { ...DEFAUT };
 try {
   const lu = JSON.parse(localStorage.getItem(CLE) ?? "null");
@@ -103,7 +103,7 @@ for (const id of Object.keys(SELECTS)) {
 document.addEventListener("click", (e) => { if (!e.target.closest(".sel")) fermerMenus(null); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") fermerMenus(null); });
 
-const CHAMPS = ["sLong", "sReg"];
+const CHAMPS = ["sLong", "sReg", "mLarg", "mProf", "mLong", "mPert"];
 for (const cle of CHAMPS) $(cle).addEventListener("input", () => { s[cle] = $(cle).value; maj(); });
 function majChamps() { for (const cle of CHAMPS) if ($(cle).value !== s[cle]) $(cle).value = s[cle]; }
 
@@ -121,9 +121,37 @@ function majUnites() {
 $("sAmb").innerHTML = Object.keys(AMBIANCES).reverse().map((k) => `<button type="button" role="radio" data-k="${k}">${AMB_NOMS[k]}</button>`).join("");
 $("sAmb").addEventListener("click", (e) => { const b = e.target.closest("button[data-k]"); if (b) { s.sAmb = b.dataset.k; maj(); } });
 let dernier = null;
+let dernierMastic = null;
+
+// Remplissage mastic : bloc a part (largeur × profondeur × longueur de joint, + pertes), sans lien avec la dilatation
+const num = (n) => fmt(Math.round(n * 100) / 100, 2).replace(/,?0+$/, ""); // 10 → « 10 », 13,333 → « 13,33 »
+function majMastic() {
+  const larg = nombre(s.mLarg), prof = nombre(s.mProf), long = nombre(s.mLong), pert = nombre(s.mPert);
+  const auto = profondeurMastic(larg);
+  $("mProf").placeholder = auto != null ? `auto : ${num(auto)} mm` : "à saisir";
+  const r = mastic({ largeur: larg, profondeur: prof, longueur: long, pertes: pert });
+  dernierMastic = r ? { ...r, largeur: larg, longueur: long } : null;
+  $("mCopy").disabled = !r;
+  if (!r) {
+    $("mCart").textContent = "—"; $("mSach").textContent = "—";
+    $("mWhy").textContent = larg > 35 && !(prof > 0) ? "Au-delà de 35 mm de large, il n'y a pas de profondeur habituelle : saisis la profondeur du mastic." : "Renseigne la largeur et la longueur du joint.";
+    return;
+  }
+  $("mCart").textContent = fmt(r.cartouches, 0); $("mSach").textContent = fmt(r.sachets, 0);
+  $("mWhy").textContent = `Volume : ${num(larg)} mm × ${num(r.profondeur)} mm${r.auto ? " (profondeur habituelle)" : ""} × ${num(long)} m = ${fmt(r.brut, 0)} ml, + ${num(r.pertes)} % de pertes = ${fmt(r.total, 0)} ml. Arrondi à la cartouche (${CARTOUCHE_ML} ml) ou au sachet (${SACHET_ML} ml) entier au-dessus.`;
+}
+$("mCopy").addEventListener("click", () => {
+  const r = dernierMastic; if (!r) return;
+  copier([
+    `Masse d'étanchéité : joint ${num(r.largeur)} mm × ${num(r.profondeur)} mm${r.auto ? " (profondeur habituelle)" : ""}, ${num(r.longueur)} m, ${num(r.pertes)} % de pertes`,
+    `Volume : ${fmt(r.brut, 0)} ml, ${fmt(r.total, 0)} ml avec les pertes`,
+    `À commander : ${fmt(r.cartouches, 0)} cartouche${r.cartouches > 1 ? "s" : ""} de ${CARTOUCHE_ML} ml, ou ${fmt(r.sachets, 0)} sachet${r.sachets > 1 ? "s" : ""} de ${SACHET_ML} ml`,
+  ].join("\n"));
+});
+
 function maj() {
   sauver();
-  majSelect("sMat"); majChamps(); majUnites();
+  majSelect("sMat"); majChamps(); majUnites(); majMastic();
   for (const [id, cle] of [["sAmb", "sAmb"]]) document.querySelectorAll(`#${id} button`).forEach((b) => { const on = b.dataset.k === s[cle]; b.setAttribute("aria-checked", String(on)); b.classList.toggle("on", on); });
   const amb = AMBIANCES[s.sAmb];
   $("sHyp").innerHTML = `Hypothèse : la température monte jusqu'à <b>${amb.tmax} °C</b> (et descend à ${amb.tmin} °C), la pièce étant posée à 20 °C.`;

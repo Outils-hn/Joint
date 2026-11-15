@@ -36,7 +36,7 @@ await step("Ecran de depart : 3 m d'alu au soleil", async () => {
   verif("Plus de choix de fixation : un seul ecran simple", (await page.locator("#sFix").count()) === 0);
   verif("Le joint est visible sans defiler (ordinateur)", await page.locator("#sJoint").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
   verif("Le champ affiche « 3000 mm »", (await page.locator("#sLong").evaluate((el) => el.value)) === "3000" && (await page.locator("#sLong + .u").evaluate((el) => el.textContent.replace(/\s+/g, " ").trim())) === "3000 mm");
-  verif("Aucun reglage detaille : un seul champ de longueur", (await page.locator("input").evaluateAll((els) => els.filter((e) => !e.closest("dialog")).length)) === 2);
+  verif("Aucun reglage detaille : longueur + reglage de pose pour la dilatation, 4 champs pour le mastic", (await page.locator("input").evaluateAll((els) => els.filter((e) => !e.closest("dialog")).length)) === 6);
   await page.screenshot({ path: `${OUT}/01-depart.png`, fullPage: true });
   await c.close();
 });
@@ -78,6 +78,35 @@ await step("Calculs : longueur, materiau, situation, reglage de pose", async () 
   await c.close();
 });
 
+await step("Remplissage mastic : cartouches et sachets", async () => {
+  const { c, page } = await ouvrir();
+  verif("Depart : 10 mm × 10 m = 1 100 ml, 4 cartouches, 2 sachets", (await txt(page, "#mCart")) === "4" && (await txt(page, "#mSach")) === "2", `${await txt(page, "#mCart")} / ${await txt(page, "#mSach")}`);
+  verif("Profondeur proposee affichee (auto : 10 mm)", (await page.locator("#mProf").getAttribute("placeholder")) === "auto : 10 mm");
+  await page.fill("#mLarg", "10"); await page.fill("#mProf", "10"); await page.fill("#mLong", "200");
+  verif("Exemple Gyso : 10 × 10 mm sur 200 m = 71 cartouches, 37 sachets", (await txt(page, "#mCart")) === "71" && (await txt(page, "#mSach")) === "37", `${await txt(page, "#mCart")} / ${await txt(page, "#mSach")}`);
+  verif("Phrase du calcul : 20 000 ml + 10 % = 22 000 ml", /= 20'000 ml, \+ 10 % de pertes = 22'000 ml/.test(await txt(page, "#mWhy")), await txt(page, "#mWhy"));
+  await page.fill("#mProf", ""); await page.fill("#mLarg", "15"); await page.fill("#mLong", "10");
+  verif("Profondeur vide : profondeur habituelle (15 mm de large = 10 mm), 6 cartouches, 3 sachets", (await txt(page, "#mCart")) === "6" && (await txt(page, "#mSach")) === "3" && /profondeur habituelle/.test(await txt(page, "#mWhy")), await txt(page, "#mWhy"));
+  await page.fill("#mPert", "0");
+  verif("Sans perte : 1 500 ml = 5 cartouches, 3 sachets", (await txt(page, "#mCart")) === "5" && (await txt(page, "#mSach")) === "3", `${await txt(page, "#mCart")} / ${await txt(page, "#mSach")}`);
+  await page.fill("#mLarg", "40");
+  verif("Joint de 40 mm sans profondeur : on demande la profondeur, copie desactivee", (await txt(page, "#mCart")) === "—" && /saisis la profondeur/.test(await txt(page, "#mWhy")) && (await page.locator("#mCopy").isDisabled()));
+  await page.fill("#mLong", "");
+  verif("Longueur vide : pas de resultat", (await txt(page, "#mCart")) === "—" && (await txt(page, "#mSach")) === "—");
+  verif("Le bloc mastic ne change rien a la dilatation (joint 5 mm)", (await txt(page, "#sJoint")) === "5 mm", await txt(page, "#sJoint"));
+  await page.fill("#mLarg", "10"); await page.fill("#mLong", "200"); await page.fill("#mPert", "10");
+  await c.grantPermissions(["clipboard-read", "clipboard-write"]).catch(() => {});
+  await page.click("#mCopy");
+  await page.waitForFunction(() => /copi/i.test(document.getElementById("toast").textContent), null, { timeout: 3000 }).catch(() => {});
+  verif("Copie du resume mastic", /copi/i.test(await txt(page, "#toast")), await txt(page, "#toast"));
+  await page.screenshot({ path: `${OUT}/06-mastic.png`, fullPage: true });
+  await c.close();
+  const tel = await ouvrir({ largeur: 390, hauteur: 844 });
+  verif("Telephone : bloc mastic sans defilement lateral", await pasDebordement(tel.page));
+  await tel.page.screenshot({ path: `${OUT}/07-mastic-telephone.png`, fullPage: true });
+  await tel.c.close();
+});
+
 await step("Telephone et theme sombre", async () => {
   const { c, page } = await ouvrir({ largeur: 390, hauteur: 844 });
   verif("Telephone : pas de defilement lateral", await pasDebordement(page));
@@ -100,7 +129,7 @@ await step("Copie du resume, pied de page, menu des applis", async () => {
   verif("Message « Résumé copié »", /copi/i.test(await txt(page, "#toast")), await txt(page, "#toast"));
   const pied = await page.locator("footer").evaluate((el) => { const r = el.getBoundingClientRect(); return { centre: r.left + r.width / 2, page: document.documentElement.clientWidth / 2, align: getComputedStyle(el).textAlign }; });
   verif("Pied de page centre", pied.align === "center" && Math.abs(pied.centre - pied.page) < 2, JSON.stringify(pied));
-  verif("Pied de page : version 2.29", /Joint v2.30/.test(await txt(page, "footer")), await txt(page, "footer"));
+  verif("Pied de page : version 2.31", /Joint v2.31/.test(await txt(page, "footer")), await txt(page, "footer"));
   await page.click("#aboutBtn"); verif("Clic sur la signature : fenetre « À propos » (nom, version)", await page.locator("#dApropos[open]").count() === 1 && /À propos/.test(await txt(page, "#dApropos")) && /Version /.test(await txt(page, "#dApropos")), await txt(page, "#dApropos")); await page.click("#daFermer"); verif("La fenetre se ferme", await page.locator("#dApropos[open]").count() === 0);
   verif("Bandeau sans compte : plus de « Lecture seule », juste « Se connecter »", (await txt(page, "#etatCompte")) === "" && /Se connecter/.test(await txt(page, "#compteBtn")));
   await page.evaluate(() => localStorage.setItem("sb-dtxgvwaqjmmffiiohika-auth-token", JSON.stringify({ access_token: "t", expires_at: 9999999999, user: { email: "hugo@exemple.ch" } })));

@@ -143,6 +143,15 @@ footer a:hover, footer button:hover { color: var(--ink); text-decoration: underl
 .sresult .big { font-size: 52px; }
 .sjoint .big { font-size: 40px; }
 
+/* Remplissage mastic */
+.mgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 8px; }
+.mgrid > div { display: grid; gap: 6px; align-content: start; min-width: 0; }
+.mres { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.mt { background: var(--joint-soft); border: 1px solid var(--joint-line); border-radius: 8px; padding: 12px 14px; min-width: 0; }
+.mt .big { font-size: 40px; margin: 2px 0 0; }
+#mCopy { margin-top: 2px; }
+.card .actions { margin-top: 14px; }
+
 /* Fenetre « A propos » (meme principe que les autres applis) */
 dialog { border: 1px solid var(--line); border-radius: 12px; padding: 0; background: var(--surface); color: var(--ink); width: min(380px, calc(100vw - 32px)); box-shadow: 0 12px 40px rgba(0,0,0,.25); }
 dialog::backdrop { background: rgba(0,0,0,.45); }

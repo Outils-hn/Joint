@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { nombre, fmt, variation, jointSimple } from "../js/core.js";
+import { nombre, fmt, variation, jointSimple, profondeurMastic, mastic } from "../js/core.js";
 
 const proche = (a, b, msg) => assert.ok(Math.abs(a - b) < 0.005, `${msg ?? ""} ${a} ≠ ${b}`);
 
@@ -62,4 +62,39 @@ test("lecture commune des nombres : suisse, francais, anglais, ambigus refuses",
 test("affichage commun : apostrophe suisse pour les milliers, jamais de -0", () => {
   assert.equal(fmt(1234.5, 1), "1'234,5"); assert.equal(fmt(1234567, 0), "1'234'567"); assert.equal(fmt(-1234.5, 1), "-1'234,5");
   assert.equal(fmt(999, 0), "999"); assert.equal(fmt(-0.001, 2), "0,00"); assert.equal(fmt(0, 1), "0,0");
+});
+
+test("mastic : 10 × 10 mm sur 200 m = 20 000 ml, 22 000 ml avec 10 % de pertes = 71 cartouches ou 37 sachets (exemple du calculateur Gyso)", () => {
+  const r = mastic({ largeur: 10, profondeur: 10, longueur: 200 });
+  assert.equal(r.brut, 20000); proche(r.total, 22000); assert.equal(r.cartouches, 71); assert.equal(r.sachets, 37); assert.equal(r.auto, false);
+});
+
+test("mastic : profondeur habituelle selon la largeur (jusqu'a 10 = largeur, 10-20 = 2/3, 20-35 = 1/2, au-dela rien)", () => {
+  assert.equal(profondeurMastic(8), 8); assert.equal(profondeurMastic(10), 10);
+  proche(profondeurMastic(15), 10); proche(profondeurMastic(20), 13.33);
+  assert.equal(profondeurMastic(30), 15); assert.equal(profondeurMastic(35), 17.5);
+  assert.equal(profondeurMastic(36), null); assert.equal(profondeurMastic(0), null); assert.equal(profondeurMastic(NaN), null);
+});
+
+test("mastic : profondeur laissee vide = profondeur habituelle ; saisie = respectee", () => {
+  const a = mastic({ largeur: 15, longueur: 10 }); // 15 × 10 × 10 = 1 500 ml + 10 % = 1 650 ml
+  assert.equal(a.auto, true); proche(a.profondeur, 10); proche(a.total, 1650); assert.equal(a.cartouches, 6); assert.equal(a.sachets, 3);
+  const b = mastic({ largeur: 15, profondeur: 8, longueur: 10 });
+  assert.equal(b.auto, false); assert.equal(b.profondeur, 8); proche(b.brut, 1200);
+});
+
+test("mastic : arrondi au superieur, au moins 1, pertes reglables (0 si vide ou negatif)", () => {
+  assert.equal(mastic({ largeur: 10, profondeur: 10, longueur: 3.1, pertes: 0 }).cartouches, 1); // 310 ml pile
+  assert.equal(mastic({ largeur: 10, profondeur: 10, longueur: 3.11, pertes: 0 }).cartouches, 2);
+  assert.equal(mastic({ largeur: 5, profondeur: 5, longueur: 0.1, pertes: 0 }).cartouches, 1); // jamais 0
+  assert.equal(mastic({ largeur: 10, profondeur: 10, longueur: 10, pertes: 20 }).cartouches, 4); // 1 200 ml / 310 = 3,87
+  assert.equal(mastic({ largeur: 10, profondeur: 10, longueur: 10, pertes: NaN }).pertes, 0);
+  assert.equal(mastic({ largeur: 10, profondeur: 10, longueur: 10, pertes: -5 }).pertes, 0);
+});
+
+test("mastic : donnees manquantes ou joint trop large sans profondeur = pas de calcul", () => {
+  assert.equal(mastic({ largeur: NaN, profondeur: 10, longueur: 5 }), null);
+  assert.equal(mastic({ largeur: 10, profondeur: 10, longueur: 0 }), null);
+  assert.equal(mastic({ largeur: 40, longueur: 5 }), null); // au-dela de 35 mm : profondeur a saisir
+  assert.ok(mastic({ largeur: 40, profondeur: 20, longueur: 5 }));
 });
