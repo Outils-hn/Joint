@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.34 — 15 novembre 2026
+
+- Nouveauté : l'explication sous le calcul du mastic montre maintenant comment des distances (mm et m) donnent des millilitres, avec un exemple.
+
 ## 2.33 — 15 novembre 2026
 
 - Nouveauté : sous le calcul du mastic, une courte explication rappelle comment le nombre de cartouches est calculé (volume, pertes, arrondi, profondeur habituelle).
