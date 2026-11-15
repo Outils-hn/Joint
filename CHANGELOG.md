@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.32 — 15 novembre 2026
+
+- Nouveauté : Joint garde maintenant son aspect (polices) et s'ouvre plus vite même avec un réseau très faible ou sans réseau : si le réseau met plus de 3 secondes à répondre, l'appli s'ouvre depuis sa copie enregistrée.
+
 ## 2.31 — 15 novembre 2026
 
 - Nouveauté : un nouveau bloc « Remplissage mastic » calcule combien de cartouches (310 ml) ou de sachets (600 ml) de silicone commander pour remplir un joint : largeur, profondeur (proposée selon la largeur, modifiable), longueur et pertes (10 % par défaut).
