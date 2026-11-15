@@ -1,7 +1,7 @@
 // Service worker de Joint : l'appli s'ouvre aussi sans reseau (bureau, toit, sous-sol).
 // En ligne : on prend toujours la version la plus recente, qu'on garde en copie. Hors ligne : on sert la copie.
 // Les echanges avec la base (Supabase) ne passent jamais par ici.
-const VERSION = "2.33";
+const VERSION = "2.34";
 const CACHE = "joint-" + VERSION;
 const DELAI_MS = 3000; // reseau trop lent (chantier, sous-sol) : apres 3 s on sert la copie
 const FIXES = ["./", "index.html", "icone-192.png", "icone-512.png", "fonts/Geist-wght.woff2", "fonts/GeistMono-wght.woff2"];
