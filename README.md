@@ -2,7 +2,7 @@
 
 Dilatation d'une pièce (alu, acier, inox, verre) : de combien elle dilate, quel joint prévoir entre deux pièces, quel trou oblong si elle est vissée (vis au milieu, réglage de pose facultatif). Remplissage mastic : nombre de cartouches (310 ml) et de sachets (600 ml) pour remplir un joint (largeur × profondeur × longueur + 10 % de pertes). Pièce toujours fixée au milieu, pose à 20 °C, résultats arrondis au mm supérieur.
 
-- Sans compte, sans base de données : tout se calcule dans le navigateur ; les réglages sont gardés sur l'appareil.
+- Pas de base de données : tout se calcule dans le navigateur, les réglages sont gardés sur l'appareil. L'appli est réservée aux comptes de l'équipe (garde commune, renvoi vers l'Accueil sans session).
 - Calculs dans `js/core.js` (testés : `npm test`), affichage dans `js/app.js`.
 - Check-up navigateur : `e2e/checkup.mjs` (lancé par le workflow « Captures » sur chaque branche).
 - Publication : GitHub Pages, branche `main`, adresse `https://outils-hn.github.io/Joint/`.
