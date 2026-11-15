@@ -62,3 +62,34 @@ export function jointSimple({ coef, longueur, tpose = 20, tmin, tmax, reglage = 
   const arrondi = (x) => Math.max(0, Math.ceil(x - 1e-9));
   return { dilatation, raccourcissement, part, avance, brut, joint: arrondi(brut), demi, reglage: reg, cote: demi + reg, trouBrut: 2 * (demi + reg), trou: arrondi(2 * (demi + reg)) };
 }
+
+/** Conditionnements de masse d'etancheite (silicone, mastic) : volume en ml. */
+export const CARTOUCHE_ML = 310;
+export const SACHET_ML = 600;
+
+/**
+ * Profondeur habituelle du mastic selon la largeur du joint (regle usuelle des fabricants) :
+ * jusqu'a 10 mm = la largeur, de 10 a 20 mm = 2/3 de la largeur, de 20 a 35 mm = la moitie. Au-dela : pas de regle, null.
+ */
+export function profondeurMastic(largeur) {
+  if (!Number.isFinite(largeur) || largeur <= 0) return null;
+  if (largeur <= 10) return largeur;
+  if (largeur <= 20) return (largeur * 2) / 3;
+  if (largeur <= 35) return largeur / 2;
+  return null;
+}
+
+/**
+ * Masse d'etancheite a commander pour remplir un joint : largeur (mm) × profondeur (mm) × longueur (m) = volume en ml,
+ * plus les pertes (10 % par defaut), puis nombre de cartouches et de sachets entiers (arrondi au superieur).
+ * Profondeur absente : on prend la profondeur habituelle (voir profondeurMastic).
+ */
+export function mastic({ largeur, profondeur, longueur, pertes = 10 }) {
+  const prof = Number.isFinite(profondeur) && profondeur > 0 ? profondeur : profondeurMastic(largeur);
+  if (![largeur, longueur].every((x) => Number.isFinite(x) && x > 0) || prof == null) return null;
+  const p = Number.isFinite(pertes) && pertes > 0 ? pertes : 0;
+  const brut = largeur * prof * longueur; // mm × mm × m = ml
+  const total = brut * (1 + p / 100);
+  const entiers = (x, volume) => Math.max(1, Math.ceil(x / volume - 1e-9));
+  return { profondeur: prof, auto: !(Number.isFinite(profondeur) && profondeur > 0), pertes: p, brut, total, cartouches: entiers(total, CARTOUCHE_ML), sachets: entiers(total, SACHET_ML) };
+}
