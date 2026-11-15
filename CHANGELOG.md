@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 2.33 — 15 novembre 2026
+
+- Nouveauté : sous le calcul du mastic, une courte explication rappelle comment le nombre de cartouches est calculé (volume, pertes, arrondi, profondeur habituelle).
+
 ## 2.32 — 15 novembre 2026
 
 - Nouveauté : Joint garde maintenant son aspect (polices) et s'ouvre plus vite même avec un réseau très faible ou sans réseau : si le réseau met plus de 3 secondes à répondre, l'appli s'ouvre depuis sa copie enregistrée.
