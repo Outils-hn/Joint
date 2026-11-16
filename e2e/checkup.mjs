@@ -1,6 +1,7 @@
 // Check-up automatique de Joint dans un vrai navigateur (donnees du navigateur vierges).
 // Resultat : checkup.txt (OK / ECHEC) + captures d'ecran.
 import { chromium } from "playwright";
+import { detailsVisuels } from "./details.mjs";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
 
@@ -8,6 +9,7 @@ const BASE = process.env.APP_URL ?? "http://127.0.0.1:8090/";
 const OUT = process.argv[2] ?? "captures";
 mkdirSync(OUT, { recursive: true });
 const lignes = [];
+const lignesDetails = lignes;
 const verif = (nom, ok, detail = "") => lignes.push(`${ok ? "OK    " : "ECHEC "} ${nom}${detail ? ` (${detail})` : ""}`);
 const step = async (nom, fn) => { try { await fn(); } catch (e) { verif(nom, false, e.message.split("\n")[0].slice(0, 180)); } };
 const browser = await chromium.launch();
@@ -38,7 +40,7 @@ await step("Ecran de depart : 3 m d'alu au soleil", async () => {
   verif("Le joint est visible sans defiler (ordinateur)", await page.locator("#sJoint").evaluate((el) => el.getBoundingClientRect().bottom < window.innerHeight));
   verif("Le champ affiche « 3000 mm »", (await page.locator("#sLong").evaluate((el) => el.value)) === "3000" && (await page.locator("#sLong + .u").evaluate((el) => el.textContent.replace(/\s+/g, " ").trim())) === "3000 mm");
   verif("Aucun reglage detaille : longueur + reglage de pose pour la dilatation, 4 champs pour le mastic", (await page.locator("input").evaluateAll((els) => els.filter((e) => !e.closest("dialog")).length)) === 6);
-  await page.screenshot({ path: `${OUT}/01-depart.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/01-depart.png`, fullPage: true }); await detailsVisuels(page, "01-depart.png", lignesDetails);
   await c.close();
 });
 
@@ -57,7 +59,7 @@ await step("Calculs : longueur, materiau, situation, reglage de pose", async () 
   await page.click("#sAmb [data-k='ombre']");
   await page.click("#sMat .sel-btn");
   verif("Menu matiere : 4 choix", (await page.locator("#sMat .sel-pop button").count()) === 4);
-  await page.screenshot({ path: `${OUT}/02-menu.png` });
+  await page.screenshot({ path: `${OUT}/02-menu.png` }); await detailsVisuels(page, "02-menu.png", lignesDetails);
   await page.keyboard.press("Escape");
   verif("Echap ferme le menu", await page.locator("#sMat .sel-pop").evaluate((el) => el.classList.contains("hidden")));
   await page.click("#sMat .sel-btn"); await page.click("#sMat .sel-pop [data-k='verre']");
@@ -68,7 +70,7 @@ await step("Calculs : longueur, materiau, situation, reglage de pose", async () 
   verif("Phrase avec reglage : 2,07 + 20 = 22,07 mm, total 44,14 arrondi a 45", /2,07 mm de course \+ 20 mm de réglage = 22,07 mm\. Trou total : 44,14 mm, arrondi à 45 mm/.test(await txt(page, "#sTrouWhy")), await txt(page, "#sTrouWhy"));
   verif("Reglage : 22,07 mm de chaque cote", (await txt(page, "#sSlot")) === "22,07 mm 22,07 mm", await txt(page, "#sSlot"));
   verif("Le joint ne change pas avec le reglage", (await txt(page, "#sJoint")) === "5 mm");
-  await page.screenshot({ path: `${OUT}/03-reglage.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/03-reglage.png`, fullPage: true }); await detailsVisuels(page, "03-reglage.png", lignesDetails);
   await page.fill("#sLong", "");
   verif("Champ vide : pas de resultat, copie desactivee", (await txt(page, "#sJoint")) === "—" && (await txt(page, "#sTrou")) === "—" && (await page.locator("#sCopy").isDisabled()));
   await page.fill("#sLong", "1 500,5");
@@ -100,7 +102,7 @@ await step("Remplissage mastic : cartouches et sachets", async () => {
   await page.click("#mCopy");
   await page.waitForFunction(() => /copi/i.test(document.getElementById("toast").textContent), null, { timeout: 3000 }).catch(() => {});
   verif("Copie du resume mastic", /copi/i.test(await txt(page, "#toast")), await txt(page, "#toast"));
-  await page.screenshot({ path: `${OUT}/06-mastic.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/06-mastic.png`, fullPage: true }); await detailsVisuels(page, "06-mastic.png", lignesDetails);
   await c.close();
   const tel = await ouvrir({ largeur: 390, hauteur: 844 });
   verif("Telephone : bloc mastic sans defilement lateral", await pasDebordement(tel.page));
@@ -117,7 +119,7 @@ await step("Telephone et theme sombre", async () => {
   await page.screenshot({ path: `${OUT}/04-telephone.png`, fullPage: true });
   await c.close();
   const sombre = await ouvrir({ sombre: true });
-  await sombre.page.screenshot({ path: `${OUT}/05-sombre.png`, fullPage: true });
+  await sombre.page.screenshot({ path: `${OUT}/05-sombre.png`, fullPage: true }); await detailsVisuels(sombre.page, "05-sombre.png", lignesDetails);
   verif("Theme sombre applique", (await sombre.page.evaluate(() => document.documentElement.dataset.theme)) === "dark");
   await sombre.c.close();
 });
@@ -140,7 +142,7 @@ await step("Copie du resume, pied de page, menu des applis", async () => {
   verif("Message « Résumé copié »", /copi/i.test(await txt(page, "#toast")), await txt(page, "#toast"));
   const pied = await page.locator("footer").evaluate((el) => { const r = el.getBoundingClientRect(); return { centre: r.left + r.width / 2, page: document.documentElement.clientWidth / 2, align: getComputedStyle(el).textAlign }; });
   verif("Pied de page centre", pied.align === "center" && Math.abs(pied.centre - pied.page) < 2, JSON.stringify(pied));
-  verif("Pied de page : version 2.35", /Joint v2.35/.test(await txt(page, "footer")), await txt(page, "footer"));
+  verif("Pied de page : version 2.35", /Joint v2.36/.test(await txt(page, "footer")), await txt(page, "footer"));
   await page.click("#aboutBtn"); verif("Clic sur la signature : fenetre « À propos » (nom, version)", await page.locator("#dApropos[open]").count() === 1 && /À propos/.test(await txt(page, "#dApropos")) && /Version /.test(await txt(page, "#dApropos")), await txt(page, "#dApropos")); await page.click("#daFermer"); verif("La fenetre se ferme", await page.locator("#dApropos[open]").count() === 0);
   verif("Bandeau sans compte : plus de « Lecture seule », juste « Se connecter »", (await txt(page, "#etatCompte")) === "" && /Se connecter/.test(await txt(page, "#compteBtn")));
   await page.evaluate(() => localStorage.setItem("sb-dtxgvwaqjmmffiiohika-auth-token", JSON.stringify({ access_token: "t", expires_at: 9999999999, user: { email: "hugo@exemple.ch" } })));
